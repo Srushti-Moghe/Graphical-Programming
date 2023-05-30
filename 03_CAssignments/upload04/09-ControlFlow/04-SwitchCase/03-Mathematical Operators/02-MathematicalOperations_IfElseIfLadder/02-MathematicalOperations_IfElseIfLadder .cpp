@@ -70,13 +70,13 @@ int main(void)
 		{
 			if (SUMa >= SUMb)
 			{
-				SUMresult = SUMa % SUMb;
-				printf("Division of 'A' = %d by 'B' = %d gives remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
+				SUMresult = SUMa / SUMb;
+				printf("Division of 'A' = %d by 'B' = %d gives Quotient = %d !!!\n\n", SUMa, SUMb, SUMresult);
 			}
 			else
 			{
-				SUMresult = SUMa % SUMb;
-				printf("Division of 'A' = %d by 'B' = %d gives remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
+				SUMresult = SUMb / SUMa;
+				printf("Division of 'B' = %d by 'A' = %d gives Quotient = %d !!!\n\n", SUMa, SUMb, SUMresult);
 			}
 		}
 
@@ -85,12 +85,12 @@ int main(void)
 			if (SUMa >= SUMb)
 			{
 				SUMresult = SUMa % SUMb;
-				printf("Division of 'A' = %d by 'B' = %d gives remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
+				printf("Division of 'A' = %d by 'B' = %d gives Remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
 			}
 			else
 			{
 				SUMresult = SUMb % SUMa;
-				printf("Division of 'B' = %d by 'A' = %d gives remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
+				printf("Division of 'B' = %d by 'A' = %d gives Remainder = %d !!!\n\n", SUMa, SUMb, SUMresult);
 			}
 		}
 		else
