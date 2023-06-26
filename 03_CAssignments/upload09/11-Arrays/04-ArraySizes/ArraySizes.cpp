@@ -44,7 +44,7 @@ int main(void)
 	printf("Number of Elements (depth) in one column in one row in 3D integer array iArray_Three = %lu\n", (sizeof(SiArray_Three[0][0]) / sizeof(SiArray_Three[0][0][0])));
 	S_depth_3D = (sizeof(SiArray_Three[0][0]) / sizeof(SiArray_Three[0][0][0]));
 
-	printf("Number of Elements in total in 3D Array iArray_Three = %d = \n", (S_num_rows_3D * S_num_columns_3D * S_depth_3D));
+	printf("Number of Elements in total in 3D Array iArray_Three = %d  \n", (S_num_rows_3D * S_num_columns_3D * S_depth_3D));
 
 	printf("\n\n");
 
