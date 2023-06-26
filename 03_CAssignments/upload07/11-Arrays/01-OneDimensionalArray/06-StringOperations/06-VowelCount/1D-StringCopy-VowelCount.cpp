@@ -6,7 +6,7 @@
 int main(void)
 {
 	//Function Prototype
-	void MyStrlen(char[]);
+	int MyStrlen(char[]);
 
 	//Variable declarations
 	char S_chArray[MAX_STRING_LENGTH];//A Character Array is a String
