@@ -9,14 +9,14 @@ int main(void)
 	//Variable Declarations
 	// 'a' is a local variable. It is local to main() only.
 
-	int a = 5;
+	int SUMa = 35;
 
 	//Function Prototypes
 	void change_count(void);
 
 	//Code
 	printf("\n");
-	printf("A = %d\n\n", a);
+	printf("A = %d\n\n", SUMa);
 	
 	//local_count is initialized to 0
 	//local_count = local_count + 1 = 0 + 1 = 1
@@ -41,11 +41,11 @@ void change_count(void)
 	//Variable Declarations
 	//'local_count' is a Local Static Variable. It is local to change_count() only
 	//It will retain its value between calls to change_count()
-	static int local_count = 0;
+	static int S_local_count = 0;
 
 	//Code
-	local_count = local_count + 1;
-	printf("Local Count = %d\n", local_count);
+	S_local_count = S_local_count + 1;
+	printf("Local Count = %d\n", S_local_count);
 	//*** LOCAL SCOPE of change_count() ends***
 }
 

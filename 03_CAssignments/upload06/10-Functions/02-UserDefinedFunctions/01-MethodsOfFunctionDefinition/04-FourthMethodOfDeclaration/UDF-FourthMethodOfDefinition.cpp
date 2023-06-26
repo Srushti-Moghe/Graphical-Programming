@@ -2,7 +2,7 @@
 
 //Entry Point Function => main() => VALID RETURN TYPE (int) and 3 PARAMETERS (int, argc, char *argv[], char *envp[])
 
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char *argv[], char *envp[])
 {
 	// Function Prototype / Declaration / Signature
 	int MyAddition(int, int);
@@ -18,7 +18,7 @@ int main(int argc, char* argv[], char* envp[])
 	printf("Enter Integer Value for 'B' : ");
 	scanf("%d", &SUMb);
 
-	MyAddition(SUMa, SUMb); //FUNCTION CALL
+	SUMresult = MyAddition(SUMa, SUMb); //FUNCTION CALL
 	printf("\n\n");
 	printf("Sum of %d and %d = %d\n\n", SUMa, SUMb, SUMresult);
 
