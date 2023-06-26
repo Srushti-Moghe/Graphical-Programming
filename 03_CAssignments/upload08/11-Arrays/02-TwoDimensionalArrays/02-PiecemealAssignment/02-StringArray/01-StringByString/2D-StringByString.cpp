@@ -77,7 +77,7 @@ void MyStrcpy(char str_destination[], char str_source[])
 	str_destination[S_j] = '\0';
 }
 
-int MySterlen(char str[])
+int MyStrlen(char str[])
 {
 	//Variable Declarations
 	int S_j;

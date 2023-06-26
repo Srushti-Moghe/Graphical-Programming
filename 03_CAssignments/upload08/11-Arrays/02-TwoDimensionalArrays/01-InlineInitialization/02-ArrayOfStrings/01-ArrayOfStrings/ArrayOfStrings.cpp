@@ -41,7 +41,7 @@ int main(void)
 
 	for (S_i = 0; S_i < S_strArray_num_rows; S_i++)
 	{
-		S_strActual_num_chars = S_strActual_num_chars + MySterlen(S_strArray[S_i]);
+		S_strActual_num_chars = S_strActual_num_chars + MyStrlen(S_strArray[S_i]);
 	}
 	printf("Actual Number of Elements (Characters) in Two Dimensional (2D) Char Array (String Array i = %d\n\n", S_strActual_num_chars);
 
@@ -64,7 +64,7 @@ int main(void)
 	return(0);
 }
 
-int MySterlen(char str[])
+int MyStrlen(char str[])
 {
 	//Variable Declarations
 	int S_j;
