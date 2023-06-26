@@ -20,7 +20,7 @@ int main(void)
 	scanf("%u", &SUMb);
 
 	printf("\n\n\n\n");
-	SUMresult = SUMa ^ SUMb;
+	SUMresult = SUMa | SUMb;
 	printf("Bitwise OR-ing of \nSUMa = %d (Decimal) and B = %d (Decimal) gives result %d (Decimal). \n\n", SUMa, SUMb, SUMresult);
 
 	PrintBinaryFormOfNumber(SUMa);
@@ -60,7 +60,7 @@ void PrintBinaryFormOfNumber(unsigned int decimal_number)
 
 	printf("\n\n");
 }
-}
+
 
 
 
