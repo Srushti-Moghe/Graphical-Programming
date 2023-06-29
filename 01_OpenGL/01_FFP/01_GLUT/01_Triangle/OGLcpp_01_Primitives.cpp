@@ -1,9 +1,17 @@
 // header files
 #include <GL/freeglut.h>
+#include <stdlib.h>
+#include <time.h>
 
 // global variable declarations
 bool bIsFullScreen = false;
 
+GLenum currenttype = GL_TRIANGLES;
+
+GLfloat MyRand(GLfloat min, GLfloat max)
+{
+	return min + rand() / (RAND_MAX / (max - min));
+}
 
 // entry-point function
 int main(int argc, char* argv[])
@@ -54,26 +62,71 @@ void resize(int width, int height)
 void display(void)
 {
 	// code
+
+	srand(time(NULL));
+
 	glClear(GL_COLOR_BUFFER_BIT);
+	switch (currenttype)
+	{
+		case GL_POINTS:
+			
+			glEnable(GL_POINT_SMOOTH);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+			glPointSize(50);
 
-	glBegin(GL_TRIANGLES);
+			glBegin(currenttype);
 
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 1.0f, 0.0f);
+			for (int i = 0; i < 20; i++)
+			{
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
+				glColor3f(MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f));
 
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+				glVertex2f(MyRand(-1.0f, 1.0f), MyRand(-1.0f, 1.0f));
+			}
 
-	glEnd();
+			glEnd();
+			
+
+		case GL_LINES:
+
+			glEnable(GL_LINE_SMOOTH);
+
+			glLineWidth(25);
+
+			glBegin(currenttype);
+
+			for (int i = 0; i < 20; i++)
+			{
+
+				glColor3f(MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f));
+
+				glVertex2f(MyRand(-1.0f, 1.0f), MyRand(-1.0f, 1.0f));
+			}
+
+			glEnd();
+
+		case GL_TRIANGLES:
+
+			glBegin(currenttype);
+
+			for (int i = 0; i < 9; i++)
+			{
+
+				glColor3f(MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f), MyRand(0.0f, 1.0f));
+
+				glVertex2f(MyRand(-1.0f, 1.0f), MyRand(-1.0f, 1.0f));
+			}
+
+			glEnd();
+
+			break;
+		default:
+			break;
+	}
 
 	glutSwapBuffers();
 }
+
 
 void keyboard(unsigned char key, int x, int y)
 {

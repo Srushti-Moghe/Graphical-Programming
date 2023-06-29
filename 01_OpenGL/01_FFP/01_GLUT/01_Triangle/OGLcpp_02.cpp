@@ -1,6 +1,9 @@
 // header files
 #include <GL/freeglut.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 // global variable declarations
 bool bIsFullScreen = false;
 
@@ -59,16 +62,15 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glBegin(GL_TRIANGLES);
+	glBegin(GL_POLYGON);
 
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 1.0f, 0.0f);
+	for (int i = 0; i < 100; i++)
+	{
+		float angle = 2.0f * M_PI * i / 100;
+		glVertex2f(0.5 * cos(angle), 0.5 * sin(angle));
+	}
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+	
 
 	glEnd();
 
