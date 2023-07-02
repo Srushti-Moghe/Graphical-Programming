@@ -6,27 +6,29 @@ struct SUM_MyPoint
 {
 	int SUM_x;
 	int SUM_y;
-} SUM_Point; 
-// Global Declaration of variable SUM_MyPoint (that includes 2 different variables of 'int' datatype), with SUM_Point as its "struct" variables
+}; 
 
 struct SUM_MyPointProperties
 {
 	int SUM_Quadrant;
 	char SUM_Axis_Location[10];
-} SUM_PointProperties;
-// Global Declaration of variable SUM_MyPointProperties (that includes 2 different variables of 'int' and 'char' datatypes), with SUM_PointProperties as its "struct" variables
-
+};
 
 int main(void)
 {
-	//Code
+	// struct variable declarations
+	struct SUM_MyPoint SUM_Point;  // Local Declaration of variable SUM_MyPoint (that includes 2 different variables of 'int' datatype), with SUM_Point as its "struct" variables
+
+	struct SUM_MyPointProperties SUM_PointProperties;   // Local Declaration of variable SUM_MyPoint (that includes 2 different variables of 'int' datatype), with SUM_Point as its "struct" variables
+
+	// Code
 	// User Inputs for Assigning the data members 
 	// struct SUM_MyPointProperties >> variable 'Point_A'
 	printf("\n\n");
-	printf("Enter 'X-Co-ordinate' for 'A' point : \n");
-	scanf("%d\n", &SUM_Point.SUM_x);
-	printf("Enter 'Y-Co-ordinate' for 'A' point : \n");
-	scanf("%d\n", &SUM_Point.SUM_y);
+	printf("Enter 'X-Co-ordinate' for 'A' point : ");
+	scanf("%d", &SUM_Point.SUM_x);
+	printf("Enter 'Y-Co-ordinate' for 'A' point : ");
+	scanf("%d", &SUM_Point.SUM_y);
 
 	printf("\n\n");
 	printf("Point Co-ordinates (x, y) are : (%d, %d) !!!\n\n", SUM_Point.SUM_x, SUM_Point.SUM_y);
@@ -48,7 +50,7 @@ int main(void)
 				strcpy(SUM_PointProperties.SUM_Axis_Location, "Positive Y-Axis");
 			}
 			SUM_PointProperties.SUM_Quadrant = 0;
-			printf("THe Point lies on the %s Axis !!!\n\n", SUM_PointProperties.SUM_Axis_Location);
+			printf("The Point lies on the %s Axis !!!\n\n", SUM_PointProperties.SUM_Axis_Location);
 		}
 		else if (SUM_Point.SUM_y == 0)  // Point lies on X-Axis
 		{
@@ -61,7 +63,7 @@ int main(void)
 				strcpy(SUM_PointProperties.SUM_Axis_Location, "Positive X-Axis");
 			}
 			SUM_PointProperties.SUM_Quadrant = 0;
-			printf("THe Point lies on the %s Axis !!!\n\n", SUM_PointProperties.SUM_Axis_Location);
+			printf("The Point lies on the %s Axis !!!\n\n", SUM_PointProperties.SUM_Axis_Location);
 
 		}
 		else
@@ -84,6 +86,7 @@ int main(void)
 			{
 				SUM_PointProperties.SUM_Quadrant = 4;
 			}
+			printf("The Point lies in Quadrant Number %d !!!\n\n", SUM_PointProperties.SUM_Quadrant);
 		}
 	}
 	

@@ -26,7 +26,7 @@ int main(void)
 	S_num_rows_2D = (sizeof(SiArray_Two) / sizeof(SiArray_Two[0]));
 
 	printf("Number of Elements (Column) in each Row in 2D integer array iArray_Two = %lu\n", (sizeof(SiArray_Two[0]) / sizeof(SiArray_Two[0][0])));
-	S_num_columns_2D = (sizeof(SiArray_Two) / sizeof(SiArray_Two[0][0]));
+	S_num_columns_2D = (sizeof(SiArray_Two[0]) / sizeof(SiArray_Two[0][0]));
 
 	printf("Number of Elements in total in 2D Array iArray_Two = %d\n", (S_num_rows_2D * S_num_columns_2D));
 

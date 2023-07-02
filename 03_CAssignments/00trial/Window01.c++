@@ -3,8 +3,6 @@
 
 // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-// long_far_pascal WndProc(unsigned int, unsigned int, unsigned int, long); Calling Convention
-
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -69,7 +67,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 						 UINT iMsg,
 						 WPARAM wParam, 
 					     LPARAM lParam)
-
 {
 	// Code
 	// Body of the callback() - WndProc [User Defined]
