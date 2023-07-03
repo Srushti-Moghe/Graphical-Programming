@@ -1,4 +1,4 @@
-// Windows header files
+ // Windows header files
 #include <windows.h>
 
 // Global Function Declarations / Function Prototype
@@ -7,13 +7,16 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
+// int WINAPI WinMain(HINSTANCE i, HINSTANCE j, LPSTR k, int k) Equivalent. But the standard CALLING CONVENTION needs to be followed.
 {
 	// Local Variable Declarations
 	WNDCLASSEX wndclass;
 	HWND hwnd;
 	MSG msg;
 	TCHAR szAppName[] = TEXT("SUMWindow");
-
+	// char str[] = "SUMWindow";
+	// wchar_t >> typedef TCHAR
+	
 	// Code
 	// WNDCLASSEX Initialization
 	wndclass.cbSize = sizeof(WNDCLASSEX);                                   //1
@@ -83,6 +86,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	}
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
 }
+
 
 
 

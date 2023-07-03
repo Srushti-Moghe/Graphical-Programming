@@ -7,6 +7,8 @@
 // global variable declarations
 bool bIsFullScreen = false;
 
+GLenum currenttype = GL_POLYGON;
+
 
 // entry-point function
 int main(int argc, char* argv[])
@@ -26,7 +28,7 @@ int main(int argc, char* argv[])
 
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("My First RTR5 Program : Srushti Umesh Moghe");
+	glutCreateWindow("Triangular Tree");
 
 	initialize();
 
@@ -62,15 +64,40 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glBegin(GL_POLYGON);
+	glColor3f(0.5f, 0.35f, 0.5f); 
+	glBegin(GL_POLYGON); // Rectangle - 1
 
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(0.5 * cos(angle), 0.5 * sin(angle));
-	}
+	glVertex3f(0.3f, 0.0f, 0.0f);
+	glVertex3f(0.3f, 0.3f, 0.0f);
+	glVertex3f(0.4f, 0.3f, 0.0f);
+	glVertex3f(0.4f, 0.0f, 0.0f);
+		
+	glEnd();
 
-	
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glBegin(GL_POLYGON); // Triangle - 3
+
+	glVertex3f(0.1f, 0.3f, 0.0f);
+	glVertex3f(0.35f, 0.6f, 0.0f);
+	glVertex3f(0.6f, 0.3f, 0.0f);
+
+	glEnd();
+
+	glColor3f(0.0f, 1.0f, 0.0f); 
+	glBegin(GL_POLYGON); // Triangle - 2
+
+	glVertex3f(0.2f, 0.6f, 0.0f);
+	glVertex3f(0.35f, 0.8f, 0.0f);
+	glVertex3f(0.5f, 0.6f, 0.0f);
+
+	glEnd();
+
+	glColor3f(0.0f, 1.0f, 0.0f); 
+	glBegin(GL_POLYGON); // Triangle - 1
+
+	glVertex3f(0.25f, 0.8f, 0.0f);
+	glVertex3f(0.35f, 0.9f, 0.0f);
+	glVertex3f(0.45f, 0.8f, 0.0f);
 
 	glEnd();
 

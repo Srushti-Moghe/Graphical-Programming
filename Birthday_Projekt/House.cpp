@@ -7,6 +7,8 @@
 // global variable declarations
 bool bIsFullScreen = false;
 
+GLenum currenttype = GL_POLYGON;
+
 
 // entry-point function
 int main(int argc, char* argv[])
@@ -24,12 +26,14 @@ int main(int argc, char* argv[])
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(800, 800);
+	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("My First RTR5 Program : Srushti Umesh Moghe");
+	glutCreateWindow("House");
 
 	initialize();
 
+	
 	glutReshapeFunc(resize);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
@@ -62,16 +66,73 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glBegin(GL_POLYGON);
+	glColor3f(1.0, 1.0, 0.0); 
+	glBegin(GL_POLYGON); // Rectangle - 3	
 
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(0.5 * cos(angle), 0.5 * sin(angle));
-	}
+	glVertex3f(0.3f, 0.0f, 0.0f);	
+	glVertex3f(0.3f, 0.5f, 0.0f);	
+	glVertex3f(0.7f, 0.5f, 0.0f);
+	glVertex3f(0.7f, 0.0f, 0.0f);
+			
+	glEnd();
 
+	glColor3f(1.0, 0.0, 0.0); 
+	glBegin(GL_POLYGON); // Rectangle - 4
 	
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.5f, 0.0f);	
+	glVertex3f(0.3f, 0.5f, 0.0f);	
+	glVertex3f(0.3f, 0.0f, 0.0f);
+	
+	glEnd();
 
+	glColor3f(0.0, 1.0, 0.0);
+	glBegin(GL_POLYGON); // Polygon - 2
+
+	glVertex3f(0.3f, 0.5f, 0.0f);	
+	glVertex3f(0.15f, 0.7f, 0.0f);	
+	glVertex3f(0.55f, 0.7f, 0.0f);	
+	glVertex3f(0.7f, 0.5f, 0.0f);
+	
+	glEnd();
+
+	glColor3f(0.0, 0.0, 1.0); 
+	glBegin(GL_POLYGON); // Triangle - 1
+	
+	glVertex3f(0.0f, 0.5f, 0.0f);	
+	glVertex3f(0.15f, 0.7f, 0.0f);	
+	glVertex3f(0.3f, 0.5f, 0.0f);
+	
+	glEnd();
+
+	glColor4f(1.0, 0.0, 1.0, 0.1);
+	glBegin(GL_POLYGON); // Window - L	
+
+	glVertex3f(0.35f, 0.15f, 0.0f);	
+	glVertex3f(0.35f, 0.35f, 0.0f);	
+	glVertex3f(0.45f, 0.35f, 0.0f);	
+	glVertex3f(0.45f, 0.15f, 0.0f);
+	
+	glEnd();
+
+	glColor4f(1.0, 0.0, 1.0, 0.1);
+	glBegin(GL_POLYGON); // Window - R	
+
+	glVertex3f(0.55f, 0.15f, 0.0f);	
+	glVertex3f(0.55f, 0.35f, 0.0f);	
+	glVertex3f(0.65f, 0.35f, 0.0f);	
+	glVertex3f(0.65f, 0.15f, 0.0f);
+	
+	glEnd();
+
+	glColor4f(0.0, 1.0, 0.0, 0.1);
+	glBegin(GL_POLYGON); // Door - 1
+	
+	glVertex3f(0.05f, 0.0f, 0.0f);	
+	glVertex3f(0.05f, 0.25f, 0.0f);	
+	glVertex3f(0.25f, 0.25f, 0.0f);	
+	glVertex3f(0.25f, 0.0f, 0.0f);
+	
 	glEnd();
 
 	glutSwapBuffers();
@@ -121,6 +182,8 @@ void uninitialize(void)
 {
 	// code
 }
+
+
 
 
 
