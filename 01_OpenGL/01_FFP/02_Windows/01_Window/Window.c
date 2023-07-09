@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	// Create the Window
 	// The parameter - WS_OVERLAPPEDWINDOW commands window to be at the topmost position hence all the mouse clicks go to this particular window
-	hwnd = CreateWindow(szAppName,
+	hwnd = CreateWindow(szAppName),
 		TEXT("Srushti Umesh Moghe"),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
