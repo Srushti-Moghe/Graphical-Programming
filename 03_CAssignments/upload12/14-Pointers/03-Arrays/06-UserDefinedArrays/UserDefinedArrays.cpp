@@ -120,7 +120,7 @@ int main(void)
 	for (SUM_i = 0; SUM_i < S_cArrayLength; SUM_i++)
 	{
 		*(SUM_ptr_cArray + SUM_i) = getch();
-		scanf("%c\n", *(SUM_ptr_cArray + SUM_i));
+		printf("%c\n", *(SUM_ptr_cArray + SUM_i));
 	}
 
 	// DISPLAY of ARRAYS

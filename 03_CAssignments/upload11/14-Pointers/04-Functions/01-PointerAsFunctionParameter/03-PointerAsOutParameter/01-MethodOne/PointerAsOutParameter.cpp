@@ -31,12 +31,12 @@ int main(void)
 	MathematicalOperations(SUM_a, SUM_b, &S_answer_sum, &S_answer_difference, &S_answer_product, &S_answer_quotient, &S_answer_remainder);
 
 	printf("\n\n");
-	printf("***** Results *****\n\n");
-	printf("Sum = %d\n", S_answer_sum);
-	printf("Difference = %d\n", S_answer_difference);
-	printf("Product = %d\n", S_answer_product);
-	printf("Quotient = %d\n", S_answer_quotient);
-	printf("Remainder = %d\n", S_answer_remainder);
+	printf("  ***** Results *****\n\n");
+	printf("Sum         = %d\n", S_answer_sum);
+	printf("Difference  = %d\n", S_answer_difference);
+	printf("Product     = %d\n", S_answer_product);
+	printf("Quotient    = %d\n", S_answer_quotient);
+	printf("Remainder   = %d\n", S_answer_remainder);
 	
 	return (0);
 }
@@ -45,12 +45,14 @@ int main(void)
 void MathematicalOperations(int x, int y, int *sum, int *difference, int *product, int *quotient, int *remainder)
 {
 	// Code
-	*sum = x + y;			//Value at address 'sum' = (x + y)
-	*difference = x - y 	//Value at address 'difference' = (x - y)
-	*product = x * y;		//Value at address 'product' = (x * y)
-	*quotient = x / y;		//Value at address 'quotient' = (x / y)
-	*quotient = x % y;		//Value at address 'remainder' = (x % y)
+	*sum = x + y;			// Value at address 'sum' = (x + y)
+	*difference = x - y; 	// Value at address 'difference' = (x - y)
+	*product = x * y;		// Value at address 'product' = (x * y)
+	*quotient = x / y;		// Value at address 'quotient' = (x / y)
+	*remainder = x % y;		// Value at address 'remainder' = (x % y)
 }
+
+
 
 
 
