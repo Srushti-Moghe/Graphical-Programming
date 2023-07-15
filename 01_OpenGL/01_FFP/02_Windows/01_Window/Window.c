@@ -20,7 +20,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// Code
 	// WNDCLASSEX Initialization
 	wndclass.cbSize = sizeof(WNDCLASSEX);                                   //1
-	wndclass.style = CS_HREDRAW | CS_VREDRAW;                               //2
+	wndclass.style = CS_HREDRAW | CS_VREDRAW;                               //2 // Forces OS to send WM_PAINT to our window. Handling WM_PAINT for resizing
 	wndclass.cbClsExtra = 0;                                                //3  
 	wndclass.cbWndExtra = 0;                                                //4
 	wndclass.lpfnWndProc = WndProc;                                         //5
