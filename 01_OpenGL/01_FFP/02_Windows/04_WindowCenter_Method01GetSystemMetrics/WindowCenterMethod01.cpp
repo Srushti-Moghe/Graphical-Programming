@@ -14,8 +14,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szAppName[] = TEXT("SUMWindow");
 
 	// Centering Screen
-	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      // Includes Task Bar
+	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    // Includes Task Bar
 	int WindowWidth = 800;
 	int WindowHeight = 600;
 

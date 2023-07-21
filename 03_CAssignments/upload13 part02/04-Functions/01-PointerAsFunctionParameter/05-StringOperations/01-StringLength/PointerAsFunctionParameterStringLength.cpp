@@ -47,7 +47,7 @@ int main(void)
 }
 
 //***Function***
-int MyStrlen(char str[])
+int MyStrlen(char *str)
 {
 	int S_j;
 	int S_string_length = 0;
@@ -57,7 +57,7 @@ int MyStrlen(char str[])
 
 	for (S_j = 0; S_j < MAX_STRING_LENGTH; S_j++)
 	{
-		if (str[S_j] == '\0')
+		if (*(str + S_j) == '\0')
 		{
 			break;
 		}
@@ -68,6 +68,8 @@ int MyStrlen(char str[])
 	}
 	return(S_string_length);
 }
+
+
 
 
 
