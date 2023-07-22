@@ -40,7 +40,7 @@ char* ReplaceVowels(char *S)
 {
 	// Function Prototype
 	void MyStrcpy(char*, char*);
-	void MyStrlen(char*);
+	int MyStrlen(char*);
 
 	// Variable Declarations
 	char* new_string = NULL;
@@ -95,8 +95,6 @@ void MyStrcpy(char* str_destination, char* str_source)
 		*(str_destination + S_j) = *(str_source + S_j);
 	}
 	*(str_destination + S_j) = '\0';
-
-	return(S_istring_length);
 }
 
 int MyStrlen(char* str)
@@ -109,7 +107,7 @@ int MyStrlen(char* str)
 
 	for (S_j = 0; S_j < MAX_STRING_LENGTH; S_j++)
 	{
-		if (str[S_j] == '\0')
+		if (*(str + S_j) == '\0')
 		{
 			break;
 		}
@@ -120,6 +118,10 @@ int MyStrlen(char* str)
 	}
 	return(S_string_length);
 }
+
+
+
+
 
 
 
