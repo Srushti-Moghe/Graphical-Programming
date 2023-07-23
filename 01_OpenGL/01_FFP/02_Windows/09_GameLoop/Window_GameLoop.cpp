@@ -11,14 +11,14 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Global Variable Declarations
 
-HWND ghwnd; // g-global hwnd-window handle
+HWND ghwnd;			// g-global hwnd-window handle
 DWORD dwStyle = 0;
 WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
 BOOL gbFullscreen = FALSE;
 
 // Global Variable Declarations
 
-FILE* gpFile = NULL;
+FILE *gpFile = NULL;
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -28,6 +28,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	HWND hwnd;
 	MSG msg;
 	TCHAR szAppName[] = TEXT("SUMWindow");
+	HDC hdc; // One of the two arguments required for GetDeviceCaps
+	hdc = GetDC(NULL);
+
+	// Centering Window
+
+	// X, Y coordinates for SCREEN
+	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
+	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+
+	/*
+	Centering Window
+	
+	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      // Includes Task Bar
+	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    // Includes Task Bar
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+	*/
+
+	// X, Y coordinates for WINDOW
+	int WindowX = (ScreenWidth / 2) - (WindowWidth / 2);
+	int WindowY = (ScreenHeight / 2) - (WindowHeight / 2);
+
 	
 	// Code
 	
@@ -64,10 +88,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		szAppName,
 		TEXT("Srushti Umesh Moghe"),
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
+		WindowX,
+		WindowY,
+		WindowWidth,
+		WindowHeight,
 		NULL,
 		NULL,
 		hInstance,
@@ -178,6 +202,8 @@ void ToggleFullscreen(void)
 		ShowCursor(TRUE);
 	}
 }
+
+
 
 
 
