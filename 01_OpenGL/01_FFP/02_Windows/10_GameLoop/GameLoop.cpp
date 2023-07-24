@@ -11,14 +11,14 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Global Variable Declarations
 
-HWND ghwnd;			// g-global hwnd-window handle
+HWND ghwnd = NULL;			// g-global hwnd-window handle
+
+BOOL gbActive = FALSE;		// By default the window is not active
+
+FILE* gpFile = NULL;
+
 DWORD dwStyle = 0;
 WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
-BOOL gbFullscreen = FALSE;
-
-// Global Variable Declarations
-
-FILE *gpFile = NULL;
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -30,6 +30,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	TCHAR szAppName[] = TEXT("SUMWindow");
 	HDC hdc; // One of the two arguments required for GetDeviceCaps
 	hdc = GetDC(NULL);
+
+	BOOL bDone = FALSE;
 
 	// Centering Window
 
@@ -55,13 +57,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("GameLoopLog.txt", "w");
+	gpFile = fopen("ActiveWindowLog.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
 		exit(0);
 	}
-	fprintf(gpFile, "SUM GameLoop Program started Successfully...\n");
+	fprintf(gpFile, "SUM Active Window Program started Successfully...\n");
 
 	// WNDCLASSEX Initialization
 	wndclass.cbSize = sizeof(WNDCLASSEX);                                   //1
@@ -105,11 +107,35 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// Paint (or Redraw) the Window
 	UpdateWindow(hwnd);
 
-	// Message Loop
+	/* Message Loop - GetMessage
+	 
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
+	}
+	*/
+
+	// GAME LOOP
+	while (bDone == FALSE)
+	{
+		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))	// PM_REMOVE - removes message from the message queue
+		{
+			if (msg.message == WM_QUIT)
+			{
+				bDone = TRUE
+			}
+			else
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+		}
+		else
+		{
+			// RENDER
+			// When the else has no cone it QUITS the program 
+		}
 	}
 
 	return((int)msg.wParam);
@@ -128,6 +154,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	// Body of the callback() - WndProc [User Defined]
 	switch(iMsg)
 	{
+	
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
@@ -161,7 +188,7 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	case WM_DESTROY:
 		if (gpFile)
 		{
-			fprintf(gpFile, "SUM GameLoop Program ended Successfully...\n");
+			fprintf(gpFile, "SUM Active Window Program ended Successfully...\n");
 			fclose(gpFile);
 			gpFile = NULL;
 		}
