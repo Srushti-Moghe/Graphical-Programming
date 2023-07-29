@@ -6,6 +6,8 @@ bool bIsFullScreen = false;
 
 // GLenum currenttype = GL_POLYGON;
 
+void Triangle(void);
+
 // entry-point function
 int main(int argc, char* argv[])
 {
@@ -62,29 +64,7 @@ void display(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glColor3f(1, 0, 0); // Red
-
-	glBegin(GL_TRIANGLES); // Triangle 1
-
-	glVertex3f(-0.25f, 0.25f, 0.0f);
-	glVertex3f(-0.25f, -0.25f, 0.0f);
-	glVertex3f(-0.5f, 0.0f, 0.0f);
-
-	glVertex3f(0.25f, 0.25f, 0.0f);
-
-	// Triangle 3
-	glVertex3f(0.25f, -0.25f, 0.0f);
-	glVertex3f(0.5f, 0.0f, 0.0f);
-
-	// Triangle 2
-	glVertex3f(-0.25f, 0.25f, 0.0f);
-	glVertex3f(0.25f, 0.25f, 0.0f);
-
-	// Triangle 4
-	glVertex3f(-0.25f, -0.25f, 0.0f);
-	glVertex3f(0.25f, -0.25f, 0.0f);
-
-	glEnd();
+	Triangle();	
 
 	glutSwapBuffers();
 }
@@ -134,6 +114,43 @@ void uninitialize(void)
 	// code
 }
 
+// Triangle()
+void Triangle(void)
+{	
+	glColor3f(1, 0, 0); // Red
+
+	glBegin(GL_TRIANGLES); // Triangle 1
+
+	glVertex3f(-0.25f, 0.25f, 0.0f);
+	glVertex3f(-0.25f, -0.25f, 0.0f);
+	glVertex3f(-0.5f, 0.0f, 0.0f);
+
+	glEnd();	
+
+	glBegin(GL_TRIANGLES); // Triangle 3
+
+	glVertex3f(0.25f, 0.25f, 0.0f);
+	glVertex3f(0.25f, -0.25f, 0.0f);
+	glVertex3f(0.5f, 0.0f, 0.0f);
+
+	glEnd();
+
+	glBegin(GL_TRIANGLES); // Triangle 2
+
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(-0.25f, 0.25f, 0.0f);
+	glVertex3f(0.25f, 0.25f, 0.0f);
+
+	glEnd();
+
+	glBegin(GL_TRIANGLES); // Triangle 4
+
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(-0.25f, -0.25f, 0.0f);
+	glVertex3f(0.25f, -0.25f, 0.0f);
+
+	glEnd();
+}
 
 
 

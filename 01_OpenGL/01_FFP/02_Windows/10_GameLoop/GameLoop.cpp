@@ -20,6 +20,8 @@ FILE* gpFile = NULL;
 DWORD dwStyle = 0;
 WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
 
+BOOL gbFullscreen = FALSE;
+
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -123,7 +125,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		{
 			if (msg.message == WM_QUIT)
 			{
-				bDone = TRUE
+				bDone = TRUE;
 			}
 			else
 			{

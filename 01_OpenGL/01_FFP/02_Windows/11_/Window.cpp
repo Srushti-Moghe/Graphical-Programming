@@ -1,8 +1,6 @@
  // Windows header files
 #include <windows.h>
 
-#define ID_TIMER 102
-
 // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 // long_far_pascal WndProc(unsigned int, unsigned int, unsigned int, long); Calling Convention
@@ -39,7 +37,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	// Create the Window
 	// The parameter - WS_OVERLAPPEDWINDOW commands window to be at the topmost position hence all the mouse clicks go to this particular window
-	hwnd = CreateWindow(szAppName,
+	hwnd = CreateWindow(szAppName),
 		TEXT("Srushti Umesh Moghe"),
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
@@ -76,93 +74,11 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 					     LPARAM lParam)
 
 {
-	HDC hdc;
-	PAINTSTRUCT ps;
-	RECT rc;
-	HBRUSH hbrBackground;
-
-	static int bColorFlag = 0;
-
 	// Code
 	// Body of the callback() - WndProc [User Defined]
-	switch (iMsg)
+	switch(iMsg)
 	{
-	case WM_CREATE:
-		SetTimer(hwnd, ID_TIMER, 1000, NULL);
-		break;
-
-	case WM_TIMER:
-		KillTimer(hwnd, ID_TIMER);
-
-		bColorFlag++;
-		if (bColorFlag > 11)
-		{
-			bColorFlag = 1;
-		}
-
-		InvalidateRect(hwnd, NULL, TRUE);
-
-
-		SetTimer(hwnd, ID_TIMER, 1000, NULL);
-		break;
-
-	case WM_PAINT:
-
-		hdc = BeginPaint(hwnd, &ps);
-		GetClientRect(hwnd, &rc);
-
-		if (bColorFlag == 1)
-		{
-			hbrBackground = CreateSolidBrush(RGB(255, 0, 0));
-		}
-		else if (bColorFlag == 2)
-		{
-			hbrBackground = CreateSolidBrush(RGB(0, 255, 0));
-		}
-		else if (bColorFlag == 3)
-		{
-			hbrBackground = CreateSolidBrush(RGB(0, 0, 255));
-		}
-		else if (bColorFlag == 4)
-		{
-			hbrBackground = CreateSolidBrush(RGB(255, 0, 0));
-		}
-		else if (bColorFlag == 5)
-		{
-			hbrBackground = CreateSolidBrush(RGB(0, 255, 0));
-		}
-		else if (bColorFlag == 6)
-		{
-			hbrBackground = CreateSolidBrush(RGB(0, 0, 255));
-		}
-		else if (bColorFlag == 7)
-		{
-			hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
-		}
-		else if (bColorFlag == 8)
-		{
-			hbrBackground = CreateSolidBrush(RGB(255, 255, 255));
-		}
-		else if (bColorFlag == 9)
-		{
-			hbrBackground = CreateSolidBrush(RGB(128, 128, 128));
-		}
-		else if (bColorFlag == 10)
-		{
-			hbrBackground = CreateSolidBrush(RGB(215, 215, 215));
-		}
-		
-		SelectObject(hdc, hbrBackground);
-		FillRect(hdc, &rc, hbrBackground);
-		DeleteObject(hbrBackground);
-
-		EndPaint(hwnd, &ps);
-		break;
-
 	case WM_DESTROY:
-
-		KillTimer(hwnd, ID_TIMER);
-
 		PostQuitMessage(0);
 		break;
 	default:
@@ -170,7 +86,6 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 	}
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
 }
-
 
 
 
