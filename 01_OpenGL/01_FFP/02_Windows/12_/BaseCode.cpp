@@ -1,9 +1,16 @@
- // Windows header files
+// SKELETON CODE
+// BASE CODE for D3D, WINDOWS (FFP>OpenGL) and OpenGL(PP)
+
+// Windows header files
 #include <windows.h>
 #include <stdlib.h>		// For exit()
 #include <stdio.h>		// For FileIO
-#include <winuser.h>
+
 #include "Window.h"		// User defined header file
+
+// Macros
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 600
 
  // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -15,7 +22,7 @@ HWND ghwnd = NULL;			// g-global hwnd-window handle
 
 BOOL gbActive = FALSE;		// By default the window is not active
 
-FILE* gpFile = NULL;
+FILE *gpFile = NULL;
 
 DWORD dwStyle = 0;
 
@@ -31,18 +38,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	HWND hwnd;
 	MSG msg;
 	TCHAR szAppName[] = TEXT("SUMWindow");
+	
+	// Function Declarations / Prototype
+
+	int initialize(void);
+	void uninitialize(void);
+	void display(void);
+	void update(void);
+
+	int iResult = 0;
+	BOOL bDone = FALSE;
+
 	HDC hdc; // One of the two arguments required for GetDeviceCaps
 	hdc = GetDC(NULL);
 
-	BOOL bDone = FALSE;
+	
 
 	// Centering Window
 
 	// X, Y coordinates for SCREEN
 	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
 	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
-	int WindowWidth = 800;
-	int WindowHeight = 600;
+	// int WindowWidth = 800;
+	// int WindowHeight = 600;
 
 	/*
 	Centering Window
@@ -54,23 +72,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	*/
 
 	// X, Y coordinates for WINDOW
-	int WindowX = (ScreenWidth / 2) - (WindowWidth / 2);
-	int WindowY = (ScreenHeight / 2) - (WindowHeight / 2);
+	int WindowX = (ScreenWidth / 2) - (WIN_WIDTH / 2);
+	int WindowY = (ScreenHeight / 2) - (WIN_HEIGHT / 2);
 
 	
 	// Code
 	
-	gpFile = fopen("ActiveWindowLog.txt", "w");
+	gpFile = fopen("BaseCode.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
 		exit(0);
 	}
-	fprintf(gpFile, "SUM Active Window Program started Successfully...\n");
+	fprintf(gpFile, "SUM BaseCode Program started Successfully...\n");
 
 	// WNDCLASSEX Initialization
 	wndclass.cbSize = sizeof(WNDCLASSEX);                                   //1
-	wndclass.style = CS_HREDRAW | CS_VREDRAW;                               //2 
+	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;                    //2		// The window context that is created by CreateWindow() is under wndclass.style
 	wndclass.cbClsExtra = 0;                                                //3  
 	wndclass.cbWndExtra = 0;                                                //4
 	wndclass.lpfnWndProc = WndProc;                                         //5
@@ -89,14 +107,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// Change CreateWindow to CreateWindowEx
 	// CreateWindowEx brings the Window above the task bar
 	hwnd = CreateWindowEx(
-		WS_EX_APPWINDOW,
+		WS_EX_APPWINDOW, // Window above Task Bar
 		szAppName,
 		TEXT("Srushti Umesh Moghe"),
-		WS_OVERLAPPEDWINDOW,
+		WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
 		WindowX,
 		WindowY,
-		WindowWidth,
-		WindowHeight,
+		WIN_WIDTH,		// Macro
+		WIN_HEIGHT,		// Macro
 		NULL,
 		NULL,
 		hInstance,
@@ -104,11 +122,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	ghwnd = hwnd;
 
+	// Initialization
+	iResult = initialize();
+
+	if (iResult != 0)
+	{
+		MessageBox(hwnd, TEXT("initialize() failed !!!"), TEXT("Error"), MB_OK | MB_ICONERROR);
+		// MessageBox(hwnd / ghwnd / NULL, TEXT("initialize() failed !!!"), TEXT("Error"), MB_OK | MB_ICONERROR);
+
+		DestroyWindow(hwnd);
+	}
+
 	// Show the Window
 	ShowWindow(hwnd, iCmdShow);
 
+	SetForegroundWindow(hwnd);
+	// SetForegroundWindow(ghwnd); To make sure the window is always in the Foreground
+
+	SetFocus(hwnd); // To keep the window selected / highlighted; internally calls WM_SETFOCUS to WndProc()
+
 	// Paint (or Redraw) the Window
-	UpdateWindow(hwnd);
+	// UpdateWindow(hwnd); is sent to WM_PAINT hence to be removed
 
 	/* Message Loop - GetMessage
 	 
@@ -136,34 +170,58 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		}
 		else
 		{
-			// RENDER
-			// When the else has no cone it QUITS the program 
+			if (gbActive == TRUE)
+			{
+				// RENDER
+				display();
+
+				// Update
+				update();
+
+			}
 		}
 	}
+	// Uninitialization
+	uninitialize();
 
 	return((int)msg.wParam);
 }
 // Claaback Function
-LRESULT CALLBACK WndProc(HWND hwnd,
-						 UINT iMsg,
-						 WPARAM wParam, 
-					     LPARAM lParam)
-
+LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	// Function Declarations
+
 	void ToggleFullscreen(void);
+	void resize(int, int);
+	// void resize(width, height);
 
 	// Code
 	// Body of the callback() - WndProc [User Defined]
 	switch(iMsg)
 	{
-	
+	case WM_SETFOCUS:		// Message for Active Window 
+		gbActive = TRUE;
+		break;
+
+	case WM_KILLFOCUS:		// Message that deviates focus from the active window
+		gbActive = FALSE;
+		break;
+
+	case WM_SIZE:
+		resize(LOWORD(lParam), HIWORD(lParam));
+		// void resize(width, height);
+	break;
+
+	case WM_ERASEBKGND:
+			return(0);	// Message does not go to DefWindowProc()
+	break;
+
 	case WM_KEYDOWN:
 		switch (LOWORD(wParam))
 		{
 		case VK_ESCAPE:
 			DestroyWindow(hwnd);
-				break;
+		break;
 		}
 	break;
 
@@ -188,17 +246,15 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 		}
 	break;
 
+	case WM_CLOSE:
+		DestroyWindow(hwnd);	// To destroy the program running in the background when the window is closed
+	break;
+
 	case WM_DESTROY:
-		if (gpFile)
-		{
-			fprintf(gpFile, "SUM Active Window Program ended Successfully...\n");
-			fclose(gpFile);
-			gpFile = NULL;
-		}
 		PostQuitMessage(0);
-		break;
-	default:
-		break;
+	break;
+default:
+	break;
 	}
 
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
@@ -232,6 +288,68 @@ void ToggleFullscreen(void)
 		ShowCursor(TRUE);
 	}
 }
+
+int initialize(void)
+{
+	// Function Declarations
+
+	// Code
+
+	return(0);
+}
+
+void resize(int width, int height)
+{
+	// Code
+	if (height <= 0)
+	{
+		height = 1;	// Precaution as height is a divisor, hence cannot be 0 or negative
+	}
+}
+
+void display(void)
+{
+	// Code
+
+}
+
+void update(void)
+{
+	// Code
+}
+
+void uninitialize(void)
+{
+	// Function Declarations
+	void ToggleFullscreen(void);
+
+	// Code
+
+	// If application is exitting in Fullscreen
+	if (gbFullscreen == TRUE)
+	{
+		ToggleFullscreen();
+		gbFullscreen == FALSE;
+	}
+
+	// get rid of Window handle / Destroy Window
+	if (ghwnd)
+	{
+		DestroyWindow(ghwnd);
+		ghwnd = NULL;
+	}
+
+	// Close the log file 
+	if (gpFile)
+	{
+		fclose(gpFile);
+		gpFile = NULL;
+	}
+
+}
+
+
+
 
 
 
