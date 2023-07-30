@@ -1,16 +1,20 @@
-// SKELETON CODE
-// BASE CODE for D3D, WINDOWS (FFP>OpenGL) and OpenGL(PP)
+// SKELETON CODE - BASE CODE for D3D, WINDOWS (FFP>OpenGL) and OpenGL(PP)
 
 // Windows header files
-#include <windows.h>
+#include <windows.h>	// Win32 API
 #include <stdlib.h>		// For exit()
 #include <stdio.h>		// For FileIO
 
-#include "Window.h"		// User defined header file
+// OpenGL Header Files
+#include <gl/GL.h>		// #include <gl\GL.h> Windows - not case sensitive
+#include "OGL.h"		// User defined header file
 
 // Macros
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
+
+// Link with OpenGL library
+#pragma comment(lib, "OpenGL32.lib")
 
  // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -26,9 +30,13 @@ FILE *gpFile = NULL;
 
 DWORD dwStyle = 0;
 
-WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };
+WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };		// struct initialization method01
 
 BOOL gbFullscreen = FALSE;
+
+// OpenGL related Global Variables
+HDC ghdc = NULL;
+HGLRC ghrc = NULL;		// Handle to GL Rendering Context
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -59,12 +67,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	// X, Y coordinates for SCREEN
 	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
 	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
-	// int WindowWidth = 800;
-	// int WindowHeight = 600;
 
 	/*
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+
 	Centering Window
-	
+
 	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      
 	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    
 	int WindowWidth = 800;
@@ -78,13 +87,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("BaseCode.txt", "w");
+	gpFile = fopen("TriangleWithoutGLUT.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
 		exit(0);
 	}
-	fprintf(gpFile, "SUM BaseCode Program started Successfully...\n");
+	fprintf(gpFile, "SUM Triangle without GLUT Program started Successfully...\n");
 
 	// WNDCLASSEX Initialization
 	wndclass.cbSize = sizeof(WNDCLASSEX);                                   //1
@@ -141,7 +150,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	SetFocus(hwnd); // To keep the window selected / highlighted; internally calls WM_SETFOCUS to WndProc()
 
-	// Paint (or Redraw) the Window
 	// UpdateWindow(hwnd); is sent to WM_PAINT hence to be removed
 
 	/* Message Loop - GetMessage
@@ -175,7 +183,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 				// RENDER
 				display();
 
-				// Update
+				// Update (For animation and changes)
 				update();
 
 			}
@@ -208,8 +216,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_SIZE:
-		resize(LOWORD(lParam), HIWORD(lParam));
-		// void resize(width, height);
+		resize(LOWORD(lParam), HIWORD(lParam));		// void resize(width, height);
 	break;
 
 	case WM_ERASEBKGND:
@@ -223,6 +230,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			DestroyWindow(hwnd);
 		break;
 		}
+	break;
+
+	case WM_RBUTTONDOWN:		// Mouse Button click
+		DestroyWindow(hwnd);
 	break;
 
 	case WM_CHAR:
@@ -294,6 +305,63 @@ int initialize(void)
 	// Function Declarations
 
 	// Code
+	PIXELFORMATDESCRIPTOR pfd;
+	int iPixelFormatIndex = 0;
+	ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));		// struct initialization method02	
+
+	// Step1 Initialization of PIXELFORMATDESCRIPTOR
+	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nVersion = 1;		// Conventionally version 1
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 32;		
+	pfd.cRedBits = 8;
+	pfd.cGreenBits = 8;
+	pfd.cBlueBits = 8;
+	pfd.cAlphaBits = 8;
+
+	// Step2 Get DC
+	ghdc = GetDC(ghwnd);
+	if (ghdc == NULL)
+	{
+		fprintf(gpFile, "GetDC() Failed...\n");
+		return(-1);
+	}
+	
+	// Step3
+	iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
+	if (iPixelFormatIndex == 0) // NON ZERO POSITIVE value is the success of iPixelFormatIndex
+	{
+		fprintf(gpFile, "ChoosePixelFormat() Failed...\n");
+		return(-2);
+	}
+
+	// Step4 Set obtained Pixel Format
+	if (SetPixelFormat(ghdc, iPixelFormatIndex, &pfd) == FALSE)
+	{
+		fprintf(gpFile, "SetPixelFormat() Failed...\n");
+		return(-3);
+	}
+
+	// Step5 Tell Windows Graphics Library (Bridging Library) to give OpenGL compatible DC from this device context - 'ghdc'
+	// Step5 Create OpenGL Context from Device Context
+	ghrc = wglCreateContext(ghdc);
+	if (ghrc == NULL)
+	{
+		fprintf(gpFile, "wglCreateContext() Failed...\n");
+		return(-4);
+	}
+	// Step6 Make Rendering Context Current
+	if (wglMakeCurrent(ghdc, ghrc) == FALSE)
+	{
+		fprintf(gpFile, "wglMakeCurrent() Failed...\n");
+		return(-5);
+	}
+
+	// OpenGL starts here
+	// To Set Clear Color of window to Blue DOESNOT paint the window Blue
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
 
 	return(0);
 }
@@ -303,13 +371,37 @@ void resize(int width, int height)
 	// Code
 	if (height <= 0)
 	{
-		height = 1;	// Precaution as height is a divisor, hence cannot be 0 or negative
+		height = 1;		// Precaution as height is a divisor, hence cannot be 0 or negative
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	}
 }
 
 void display(void)
 {
 	// Code
+	glClear(GL_COLOR_BUFFER_BIT);		// To paint the window Blue after setting it in glClearColor()
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glBegin(GL_TRIANGLES);
+
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 1.0f, 0.0f);
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, 0.0f);
+
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 0.0f);
+
+	glEnd();
+
+	SwapBuffers(ghdc);		// Win32 API. ghrc not used as it is an gl API that the windows DC wont understand
 
 }
 
@@ -324,29 +416,47 @@ void uninitialize(void)
 	void ToggleFullscreen(void);
 
 	// Code
-
 	// If application is exitting in Fullscreen
 	if (gbFullscreen == TRUE)
 	{
 		ToggleFullscreen();
 		gbFullscreen == FALSE;
 	}
-
-	// get rid of Window handle / Destroy Window
+	// Make HDC as current DC
+	if (wglGetCurrentContext() == ghrc)
+	{
+		wglMakeCurrent(NULL, NULL);
+	}
+	// Destroy / Delete Rendering Context
+	if (ghrc)
+	{
+		wglDeleteContext(ghrc);
+		ghrc = NULL;
+	}
+	// Release HDC
+	if (ghdc)
+	{
+		ReleaseDC(ghwnd, ghdc);
+		ghdc = NULL;
+	}
+	// Get rid of Window handle / Destroy Window
 	if (ghwnd)
 	{
 		DestroyWindow(ghwnd);
 		ghwnd = NULL;
 	}
-
 	// Close the log file 
 	if (gpFile)
-	{
-		fclose(gpFile);
-		gpFile = NULL;
-	}
+		{
+			fprintf(gpFile, "SUM Triangle without GLUT Program ended Successfully...\n");
+			fclose(gpFile);
+			gpFile = NULL;
+		}
 
 }
+
+
+
 
 
 

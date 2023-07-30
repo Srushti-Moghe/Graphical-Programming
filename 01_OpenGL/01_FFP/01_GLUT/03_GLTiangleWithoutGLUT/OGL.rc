@@ -1,0 +1,6 @@
+#include <windows.h>	// Since the <windows.h> is an SDK header file it is included using <Filename.h>
+
+#include "OGL.h"		// Since the 'Window.h' is a user defined header file from the same directory of the .c/.cpp files it is included using "hesderfile.h"
+
+MYICON ICON MyIcon.ico
+
