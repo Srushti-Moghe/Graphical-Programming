@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	glutInitWindowSize(800, 800);
 	glutInitWindowSize(800, 800);
 	glutInitWindowPosition(100, 100);
-	glutCreateWindow("House");
+	glutCreateWindow("MS Logo");
 
 	initialize();
 
