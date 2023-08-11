@@ -103,7 +103,7 @@ void display(void)
 	glEnd();
 
 	// wink	
-	glColor3f(1.0f, 1.0f, 1.0f);
+	glColor3f(1.0f, 1.0f, 0.0f);
 	glBegin(GL_POLYGON);
 
 	float radius_3 = 0.10f;
