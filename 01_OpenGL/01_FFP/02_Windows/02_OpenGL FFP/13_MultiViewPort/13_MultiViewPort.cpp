@@ -261,42 +261,60 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 		case 0x0030:	//0
+		// VK_NUMPAD0:
+
 			glViewport(0, 0, (GLsizei)ScreenWidth, (GLsizei)ScreenHeight);
 		break;
 
 		case 0x0031:	//1
+		// VK_NUMPAD1:
+
 			glViewport(0, 0, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0032:	//2
+		// VK_NUMPAD4:
+
 			glViewport((GLsizei)ScreenWidth / 2, 0, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0033:	//3
+		// VK_NUMPAD3:
+
 			glViewport((GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0034:	//4
+		// VK_NUMPAD4:
+
 			glViewport(0, (GLsizei)ScreenHeight / 2, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0035:	//5
+		// VK_NUMPAD5:
+
 			glViewport(0, 0, (GLsizei)ScreenWidth, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0036:	//6
+		// VK_NUMPAD6:
+
 			glViewport(0, (GLsizei)ScreenHeight / 2, (GLsizei)ScreenWidth, (GLsizei)ScreenHeight / 2);
 		break;
 
 		case 0x0037: //7
+		// VK_NUMPAD7:
+
 			glViewport(0, 0, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight);
 		break;
 
 		case 0x0038: //8
+		// VK_NUMPAD8:
 			glViewport((GLsizei)ScreenWidth / 2, 0, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight);
 		break;
 
 		case 0x0039: //9
+		// VK_NUMPAD9:
 			glViewport((GLsizei)ScreenWidth / 4, (GLsizei)ScreenHeight / 4, (GLsizei)ScreenWidth / 2, (GLsizei)ScreenHeight / 2);
 		break;		
 
