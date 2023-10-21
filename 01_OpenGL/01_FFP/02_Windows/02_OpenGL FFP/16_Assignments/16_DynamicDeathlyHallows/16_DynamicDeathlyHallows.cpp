@@ -61,12 +61,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	void display(void);
 	void update(void);
 
-	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
-	void Triangle();
-
 	int iResult = 0;
 	BOOL bDone = FALSE;
 
@@ -81,6 +75,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
 	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
 
+	/*
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+
+	Centering Window
+
+	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      
+	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+	*/
+
 	// X, Y coordinates for WINDOW
 	int WindowX = (ScreenWidth / 2) - (WIN_WIDTH / 2);
 	int WindowY = (ScreenHeight / 2) - (WIN_HEIGHT / 2);
@@ -88,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("10_KeyboardShapes.txt", "w");
+	gpFile = fopen("StaticDeathlyHallows.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -151,7 +157,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	SetFocus(hwnd); // To keep the window selected / highlighted; internally calls WM_SETFOCUS to WndProc()
 
-	
+	// UpdateWindow(hwnd); is sent to WM_PAINT hence to be removed
+
+	/* Message Loop - GetMessage
+	 
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	*/
+
 	// GAME LOOP
 	while (bDone == FALSE)
 	{
@@ -194,12 +210,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	void resize(int, int);
 	// void resize(width, height);
 
-	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
-	void Triangle();
-	
 	// Code
 	// Body of the callback() - WndProc [User Defined]
 	switch(iMsg)
@@ -229,11 +239,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 	break;
 
-	/* 
-	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDOWN:		
 		DestroyWindow(hwnd);
 	break;
-	*/
 
 	case WM_CHAR:
 		switch (LOWORD(wParam))
@@ -253,37 +261,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}
 		break;
 
-		case 'G':
-		case 'g':
-			GraphPaper();
-			// GraphPaper = GraphPaper();
-		break;
-
-		case 'C':
-		case 'c':
-			Circle();
-			// Circle = Circle();
-			break;
-
-		case 'T':
-		case 't':
-			Triangle();
-			// Triangle = Triangle();
-			break;
-
-		case 'R':
-		case 'r':
-			Rectangle();
-			// Rectangle = Rectangle();
-			break;
-
 		}
 	break;
-		
 
 	case WM_CLOSE:
-		DestroyWindow(hwnd);
-		break;
+		DestroyWindow(hwnd);	
+	break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -419,16 +402,9 @@ void display(void)
 	// Code
 
 	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
 	void Triangle();
-
-	// Function Declarations
-	void GraphPaper();
 	void Circle();
-	void Rectangle();
-	void Triangle();
+	void Line();
 
 	glClear(GL_COLOR_BUFFER_BIT);	
 	glMatrixMode(GL_MODELVIEW);
@@ -436,13 +412,10 @@ void display(void)
 	glLoadIdentity();
 	glTranslatef(0.0f, 0.0f, -3.0f);
 
-	// Graph Paper Background
-	
-	// Circle	
-
-	// Rectangle	
-
-	// Triangle	
+	// Circle
+	Circle();
+	Triangle();
+	Line();
 
 	SwapBuffers(ghdc);		// Win32 API. ghrc not used as it is an gl API that the windows DC wont understand
 
@@ -498,127 +471,30 @@ void uninitialize(void)
 
 }
 
-// Graph Paper
-void GraphPaper(void)
-{
-	// Yellow Center Point
-	glPointSize(3.00f);
-	glBegin(GL_POINTS);
-
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-
-	glEnd();
-
-	// Blue Vertical Lines
-
-	GLint totalcount_v = 80;
-	GLfloat linespacing_v = 1.0 / totalcount_v;
-
-	GLfloat xCoord = 0.0;
-
-	// glLineWidth(0.50f);
-	glColor3f(0.0, 0.0, 1.0);
-	glBegin(GL_LINES);
-	for (GLint i = 0; i <= totalcount_v; i++)
-	{
-		if (i == 40)
-		{
-			glLineWidth(3.00f);
-			glColor3f(0.0, 1.0, 0.0);
-		}
-		else if (i % 5 == 0)
-		{
-			glLineWidth(2.00f);
-			glColor3f(0.184, 0.184, 0.929);
-		}
-		else
-		{
-			glLineWidth(0.001f);
-			glColor3f(0.0, 0.0, 1.0);
-		}
-		xCoord = -1.0 + i * 2.0f * linespacing_v;
-		glVertex3f(xCoord, -1.0, 0.0f);
-		glVertex3f(xCoord, 1.0, 0.0f);
-	}
-	glEnd();
-
-	// Blue Horizontal Lines
 
 
-	GLint totalcount_h = 80;
-	GLfloat linespacing_h = 1.0 / totalcount_h;
 
-	GLfloat yCoord = 0.0;
-
-	// glLineWidth(0.50f);
-	glColor3f(0.0, 0.0, 1.0);
-	glBegin(GL_LINES);
-	for (GLint i = 0; i <= totalcount_h; i++)
-	{
-		if (i == 40)
-		{
-			glLineWidth(3.00f);
-			glColor3f(1.0, 0.0, 0.0);
-		}
-		else if (i % 5 == 0)
-		{
-			glLineWidth(2.00f);
-			glColor3f(0.184, 0.184, 0.929);
-		}
-		else
-		{
-			glLineWidth(0.001f);
-			glColor3f(0.0, 0.0, 1.0);
-		}
-
-		yCoord = -1.0 + i * 2.0f * linespacing_h;
-		glVertex3f(-1.0, yCoord, 0.0f);
-		glVertex3f(1.0, yCoord, 0.0f);
-	}
-	glEnd();
-
-}
-
-// Circle
 void Circle(void)
 {
-	glColor3f(1.0f, 1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
 	glLineWidth(1.50f);
 	glBegin(GL_LINE_STRIP);
 
-	float radius = 0.50f;
+	float radius = 0.303f;
 	float x_centre = 0.0f;		// distance from X-Axis
-	float y_centre = 0.0f;		// distance from Y-Axis
+	float y_centre = -0.18960f;		// distance from Y-Axis
 	for (int i = 0; i < 1000; i++)
 	{
 		float angle = 2.0f * M_PI * i / 1000;
-		glVertex3f(radius * cos(angle), radius * sin(angle), 0.0f);		// centering circle
+		glVertex3f(radius * cos(angle) + x_centre, radius * sin(angle) + y_centre, 0.0f);		// centering circle
 	}
 	glEnd();
 
 }
 
-// Rectangle
-void Rectangle(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(1.50f);
-	glBegin(GL_LINE_STRIP);
-
-	glVertex3f(-0.5f, -0.5f, 0.0f);	// LB
-	glVertex3f(-0.5f, 0.5f, 0.0f);	// LT
-	glVertex3f(0.5f, 0.5f, 0.0f);	// RT
-	glVertex3f(0.5f, -0.5f, 0.0f);	// RB
-	glVertex3f(-0.5f, -0.5f, 0.0f);	// LB
-
-	glEnd();
-}
-
-// Triangle
 void Triangle(void)
 {
-	glColor3f(1.0f, 1.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
 	glLineWidth(1.50f);
 	glBegin(GL_LINE_STRIP);
 
@@ -629,6 +505,21 @@ void Triangle(void)
 
 	glEnd();
 }
+
+void Line(void)
+{
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glLineWidth(1.50f);
+	glBegin(GL_LINES);
+
+	glVertex3f(0.0f, 0.5f, 0.0f);	// Top
+	glVertex3f(0.0f, -0.5f, 0.0f);	// Bottom
+
+	glEnd();
+}
+
+
+
 
 
 

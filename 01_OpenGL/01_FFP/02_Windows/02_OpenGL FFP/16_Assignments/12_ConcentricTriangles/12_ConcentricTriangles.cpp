@@ -4,10 +4,6 @@
 #include <windows.h>	// Win32 API
 #include <stdlib.h>		// For exit()
 #include <stdio.h>		// For FileIO
-		
-#define _USE_MATH_DEFINES
-#include <math.h>		// For math equations
-
 
 // OpenGL Header Files
 #include <GL/gl.h>		// #include <gl\GL.h> Windows - not case sensitive
@@ -61,12 +57,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	void display(void);
 	void update(void);
 
-	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
-	void Triangle();
-
 	int iResult = 0;
 	BOOL bDone = FALSE;
 
@@ -81,6 +71,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
 	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
 
+	/*
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+
+	Centering Window
+
+	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      
+	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    
+	int WindowWidth = 800;
+	int WindowHeight = 600;
+	*/
+
 	// X, Y coordinates for WINDOW
 	int WindowX = (ScreenWidth / 2) - (WIN_WIDTH / 2);
 	int WindowY = (ScreenHeight / 2) - (WIN_HEIGHT / 2);
@@ -88,7 +90,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("10_KeyboardShapes.txt", "w");
+	gpFile = fopen("12_ConcentricTriangles.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -151,7 +153,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	SetFocus(hwnd); // To keep the window selected / highlighted; internally calls WM_SETFOCUS to WndProc()
 
-	
+	// UpdateWindow(hwnd); is sent to WM_PAINT hence to be removed
+
+	/* Message Loop - GetMessage
+	 
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	*/
+
 	// GAME LOOP
 	while (bDone == FALSE)
 	{
@@ -194,12 +206,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	void resize(int, int);
 	// void resize(width, height);
 
-	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
-	void Triangle();
-	
 	// Code
 	// Body of the callback() - WndProc [User Defined]
 	switch(iMsg)
@@ -229,11 +235,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 	break;
 
-	/* 
-	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDOWN:		
 		DestroyWindow(hwnd);
 	break;
-	*/
 
 	case WM_CHAR:
 		switch (LOWORD(wParam))
@@ -253,37 +257,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}
 		break;
 
-		case 'G':
-		case 'g':
-			GraphPaper();
-			// GraphPaper = GraphPaper();
-		break;
-
-		case 'C':
-		case 'c':
-			Circle();
-			// Circle = Circle();
-			break;
-
-		case 'T':
-		case 't':
-			Triangle();
-			// Triangle = Triangle();
-			break;
-
-		case 'R':
-		case 'r':
-			Rectangle();
-			// Rectangle = Rectangle();
-			break;
-
 		}
 	break;
-		
 
 	case WM_CLOSE:
-		DestroyWindow(hwnd);
-		break;
+		DestroyWindow(hwnd);	
+	break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -419,15 +398,7 @@ void display(void)
 	// Code
 
 	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
-	void Triangle();
-
-	// Function Declarations
-	void GraphPaper();
-	void Circle();
-	void Rectangle();
+	// void GraphPaper();
 	void Triangle();
 
 	glClear(GL_COLOR_BUFFER_BIT);	
@@ -437,12 +408,60 @@ void display(void)
 	glTranslatef(0.0f, 0.0f, -3.0f);
 
 	// Graph Paper Background
+	// GraphPaper();
+
+	// For Colors 	
+	glColor3f(1.0f, 0.0f, 0.0f); // color R
+	int i = 0;
+
+	GLfloat xCoord = 0.0f;
+	GLfloat yCoord = 0.0f;
 	
-	// Circle	
+	for (i = 0; i <= 9; i++)
+	{
+		if (i == 0)
+			glColor3f(1.0f, 0.0f, 0.0f); // R
+		else if (i == 1)
+			glColor3f(0.0f, 1.0f, 0.0f); // G
+		else if (i == 2)
+			glColor3f(0.0f, 0.0f, 1.0f); // B
+		else if (i == 3)
+			glColor3f(0.5f, 1.0f, 1.0f);// C
+		else if (i == 4)
+			glColor3f(1.0f, 0.0f, 1.0f); // M
+		else if (i == 5)
+			glColor3f(1.0f, 1.0f, 0.0f); // Y
+		else if (i == 6)
+			glColor3f(1.0f, 1.0f, 1.0f);// W
+		else if (i == 7)
+			glColor3f(1.0f, 0.0f, 0.761f);// P
+		else if (i == 8)
+			glColor3f(0.0f, 0.843f, 1.0f); // LB
+		else if (i == 9)
+			glColor3f(1.0f, 0.529f, 0.0f);// O
 
-	// Rectangle	
+		// For Triangle
+		// GLfloat xCoord = 0.0f;
+		// GLfloat yCoord = 0.0f;
 
-	// Triangle	
+		glBegin(GL_LINE_STRIP);
+
+		glVertex3f(0.0f, yCoord, 0.0f);
+		glVertex3f(-xCoord, -yCoord, 0.0f);
+		glVertex3f(xCoord, -yCoord, 0.0f);
+		glVertex3f(0.0f, yCoord, 0.0f);
+
+		glEnd();
+
+		// Increments
+		xCoord = xCoord + 0.09f;
+		yCoord = yCoord + 0.09f;
+		
+
+		glBegin(GL_LINE_STRIP);
+		glEnd();
+
+	}
 
 	SwapBuffers(ghdc);		// Win32 API. ghrc not used as it is an gl API that the windows DC wont understand
 
@@ -498,7 +517,7 @@ void uninitialize(void)
 
 }
 
-// Graph Paper
+
 void GraphPaper(void)
 {
 	// Yellow Center Point
@@ -580,42 +599,6 @@ void GraphPaper(void)
 
 }
 
-// Circle
-void Circle(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(1.50f);
-	glBegin(GL_LINE_STRIP);
-
-	float radius = 0.50f;
-	float x_centre = 0.0f;		// distance from X-Axis
-	float y_centre = 0.0f;		// distance from Y-Axis
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex3f(radius * cos(angle), radius * sin(angle), 0.0f);		// centering circle
-	}
-	glEnd();
-
-}
-
-// Rectangle
-void Rectangle(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(1.50f);
-	glBegin(GL_LINE_STRIP);
-
-	glVertex3f(-0.5f, -0.5f, 0.0f);	// LB
-	glVertex3f(-0.5f, 0.5f, 0.0f);	// LT
-	glVertex3f(0.5f, 0.5f, 0.0f);	// RT
-	glVertex3f(0.5f, -0.5f, 0.0f);	// RB
-	glVertex3f(-0.5f, -0.5f, 0.0f);	// LB
-
-	glEnd();
-}
-
-// Triangle
 void Triangle(void)
 {
 	glColor3f(1.0f, 1.0f, 0.0f);
@@ -627,11 +610,10 @@ void Triangle(void)
 	glVertex3f(-0.5f, -0.5f, 0.0f);	// Left
 	glVertex3f(0.0f, 0.5f, 0.0f);	// Top
 
+
 	glEnd();
+
 }
-
-
-
 
 
 
