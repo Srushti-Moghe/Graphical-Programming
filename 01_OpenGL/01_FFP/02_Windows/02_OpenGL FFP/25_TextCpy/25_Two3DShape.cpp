@@ -4,10 +4,6 @@
 #include <windows.h>	// Win32 API
 #include <stdlib.h>		// For exit()
 #include <stdio.h>		// For FileIO
-		
-#define _USE_MATH_DEFINES
-#include <math.h>		// For math equations
-
 
 // OpenGL Header Files
 #include <GL/gl.h>		// #include <gl\GL.h> Windows - not case sensitive
@@ -29,21 +25,28 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // Global Variable Declarations
 
-HWND ghwnd = NULL;			
+HWND ghwnd = NULL;			// g-global hwnd-window handle
 
-BOOL gbActive = FALSE;		
+BOOL gbActive = FALSE;		// By default the window is not active
 
 FILE *gpFile = NULL;
 
 DWORD dwStyle = 0;
 
-WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };		
+WINDOWPLACEMENT wpPrev = { sizeof(WINDOWPLACEMENT) };		// struct initialization method01
 
 BOOL gbFullscreen = FALSE;
 
 // OpenGL related Global Variables
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;		// Handle to GL Rendering Context
+
+GLfloat pAngle = 0.0f;	// For Rotating Pyramid
+GLfloat cAngle = 0.0f;	// For Rotating Cube
+
+// Texture Object
+GLuint texture_stone = 0;
+GLuint texture_kundali = 0;
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -75,18 +78,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	int ScreenWidth = GetDeviceCaps(hdc, HORZRES);
 	int ScreenHeight = GetDeviceCaps(hdc, VERTRES);
 
-	/*
-	int WindowWidth = 800;
-	int WindowHeight = 600;
-
-	Centering Window
-
-	int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);      
-	int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);    
-	int WindowWidth = 800;
-	int WindowHeight = 600;
-	*/
-
 	// X, Y coordinates for WINDOW
 	int WindowX = (ScreenWidth / 2) - (WIN_WIDTH / 2);
 	int WindowY = (ScreenHeight / 2) - (WIN_HEIGHT / 2);
@@ -94,7 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("16_DynamicDeathlyHallows.txt", "w");
+	gpFile = fopen("25_Texture_Two3DShape.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -159,6 +150,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	// UpdateWindow(hwnd); is sent to WM_PAINT hence to be removed
 
+	/* Message Loop - GetMessage
+	 
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	*/
 
 	// GAME LOOP
 	while (bDone == FALSE)
@@ -215,11 +214,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_SIZE:
-		resize(LOWORD(lParam), HIWORD(lParam));		
+		resize(LOWORD(lParam), HIWORD(lParam));		// void resize(width, height);
 	break;
 
 	case WM_ERASEBKGND:
-			return(0);	
+			return(0);	// Message does not go to DefWindowProc()
 	break;
 
 	case WM_KEYDOWN:
@@ -231,7 +230,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		}
 	break;
 
-	case WM_RBUTTONDOWN:		
+	case WM_RBUTTONDOWN:		// Mouse Button click
 		DestroyWindow(hwnd);
 	break;
 
@@ -257,7 +256,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	break;
 
 	case WM_CLOSE:
-		DestroyWindow(hwnd);	
+		DestroyWindow(hwnd);	// To destroy the program running in the background when the window is closed
 	break;
 
 	case WM_DESTROY:
@@ -306,10 +305,15 @@ int initialize(void)
 	// Prototype Declarations
 	void resize(int, int);	// Warmup resize call
 
+	BOOL loadGLTexture(GLuint*, TCHAR[]);
+
 	// Code
 	PIXELFORMATDESCRIPTOR pfd;
 	int iPixelFormatIndex = 0;
-	ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));		
+
+	BOOL bResult;
+
+	ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));		// struct initialization method02	
 
 	// Step1 Initialization of PIXELFORMATDESCRIPTOR
 	pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -321,6 +325,9 @@ int initialize(void)
 	pfd.cGreenBits = 8;
 	pfd.cBlueBits = 8;
 	pfd.cAlphaBits = 8;
+
+	// Enabling Depth
+	pfd.cDepthBits = 32;	// Step 1 (Compulsory)
 
 	// Step2 Get DC
 	ghdc = GetDC(ghwnd);
@@ -360,14 +367,93 @@ int initialize(void)
 		return(-5);
 	}
 
-	// OpenGL starts here
-	// To Set Clear Color of window to Blue DOESNOT paint the window Blue
+	// Enabling Depth
+
+	glShadeModel(GL_SMOOTH);								// Step 2.4 (Optional)
+
+	glClearDepth(1.0f);										// Step 2.1 (Compulsory)
+	glEnable(GL_DEPTH_TEST);								// Step 2.2 (Compulsory)
+	glDepthFunc(GL_LEQUAL);									// Step 2.3 (Compulsory) Comparing Function LEQUAL is Less than or Equal to glClearDepth(valuef)
+
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);		// Step 2.5 (Optional)
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Loading Images to create Texture
+
+	bResult = loadGLTexture(&texture_stone, MAKEINTRESOURCE(MY_STONE_BITMAP));
+	// Error Checking
+	if (bResult == FALSE)
+	{
+		fprintf(gpFile, "Loading of stone texture thread Failed...\n");
+		return(-6);
+	}
+
+	bResult = loadGLTexture(&texture_kundali, MAKEINTRESOURCE(MY_KUNDALI_BITMAP));
+	// Error Checking
+	if (bResult == FALSE)
+	{
+		fprintf(gpFile, "Loading of kundali texture thread Failed...\n");
+		return(-7);
+	}
+
+	// Tell OpenGL to enable the texture
+	glEnable(GL_TEXTURE_2D);
 
 	resize(WIN_WIDTH, WIN_HEIGHT);
 
-
 	return(0);
+}
+
+// Function Definition
+
+BOOL loadGLTexture(GLuint* texture, TCHAR imageResourceID[]) 
+{
+	// Local Variable Declarations
+	HBITMAP hBitmap = NULL;
+	BITMAP bmp;
+
+	// Load the Image
+	hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);			// HMODULE GetModuleHandle (LPCTSTR lpModuleName);
+	if (hBitmap == FALSE)
+	{
+		fprintf(gpFile, "Loading of Image Failed...\n");
+		return(FALSE);
+	}
+
+	// Step 6
+	GetObject(hBitmap, sizeof(BITMAP), &bmp);
+	// Step 7
+	glGenTextures(1, texture);
+
+	// Step 7 glBindTexture
+	glBindTexture(GL_TEXTURE_2D, *texture);		// glBindTexture(Binding Point (cuz of state machine) Macro, texture value);
+
+	// Step 8
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);				// glPixelStorei(GL_UNPACK_ALIGNMENT- checking the compression (compressed/uncompressed) of the image, 4- for R,G,B,alpha);
+	// glPixelStorei(GL_UNPACK_ALIGNMENT, 1);		   // glPixelStorei(GL_UNPACK_ALIGNMENT- checking the compression (compressed/uncompressed) of the image, 1); for Programmable Pipeline
+
+	// Set texture parameters Step 10
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);					// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER- magnifies the texture closer to viewer/camera, GL_LINEAR- give the image data linearly of high quality);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER- minifies the texture closer to viewer/camera, GL_LINEAR_MIPMAP_LINEAR- give the image data after MIPMAPPING depending on the Mipmap quality);
+
+	// Create multiple mipmap images Step 10
+
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void*)bmp.bmBits);
+
+	// gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB/3 - .bmp image has only R,G,B,  bmp.bmWidth- image width, bmp.bmHeight- image height, 
+	// ... GL_BGR_EXT- Device independent bitmap image where theBGR is the reverse of RGB as windows uses Horizontally Flipped Images EXT-extended, GL_UNSIGNED_BYTE- RGBA are bits that are used to build Mipmaps
+	// ... bmp.bmBits give the address of glPixelStorei);
+
+	// Un-bind from the binding point Step 11
+
+	glBindTexture(GL_TEXTURE_2D, 0);		// glBindTexture(GL_TEXTURE_2D, 0- unbinding of the texture);
+
+	// Delete Image Resource Object Step 12 
+	DeleteObject(hBitmap);
+	hBitmap = NULL;
+
+	return(TRUE);
 }
 
 void resize(int width, int height)
@@ -393,21 +479,197 @@ void display(void)
 {
 	// Code
 
-	// Function Declarations
-	void Triangle();
-	void Circle();
-	void Line();
+	// PYRAMID
 
-	glClear(GL_COLOR_BUFFER_BIT);	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Step 3 (Compulsory)	// To paint the window Blue after setting it in glClearColor()
+	
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glTranslatef(-1.5f, 0.0f, -7.0f);
+	glRotatef(pAngle, 0.0f, 1.0f, 0.0f);
+
+	// Step 13
+	glBindTexture(GL_TEXTURE_2D, texture_stone);
+
+	glBegin(GL_TRIANGLES);
+
+	// FRONT FACE	
+	 
+	// glColor3f(1.0f, 0.0f, 0.0f);		
+	glTexCoord2f(0.5, 1.0);
+	glVertex3f(0.0f, 1.0f, 0.0f);		// Apex
+
+	// glColor3f(0.0f, 1.0f, 0.0f);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// LB
+
+	// glColor3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0, 0.0);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// RB
+
+	// RIGHT FACE	
+	
+	// glColor3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(0.5, 1.0);
+	glVertex3f(0.0f, 1.0f, 0.0f);		// Apex
+
+
+	// glColor3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(1.0, 0.0);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// LB
+
+	// glColor3f(0.0f, 1.0f, 0.0f);		// RB
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(1.0f, -1.0f, -1.0f);
+
+	// Back Face
+		
+	// glColor3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(0.5, 1.0);
+	glVertex3f(0.0f, 1.0f, 0.0f);		// Apex
+
+	// glColor3f(0.0f, 1.0f, 0.0f);		// LB
+	glTexCoord2f(1.0, 0.0);
+	glVertex3f(1.0f, -1.0f, -1.0f);
+
+	// glColor3f(0.0f, 0.0f, 1.0f);		// RB
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-1.0f, -1.0f, -1.0f);
+
+	// Left Face	
+	
+	// glColor3f(1.0f, 0.0f, 0.0f);
+	glTexCoord2f(0.5, 1.0);
+	glVertex3f(0.0f, 1.0f, 0.0f);		// Apex
+
+	// glColor3f(0.0f, 0.0f, 1.0f);		// LB
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-1.0f, -1.0f, -1.0f);
+
+	// glColor3f(0.0f, 1.0f, 0.0f);		// RB
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-1.0f, -1.0f, 1.0f);
+
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, 0);		// Unbinding Discipline for Pyramid
+
+	// CUBE
 
 	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, -3.0f);
 
-	// Circle
-	Circle();
-	Triangle();
-	Line();
+	glTranslatef(1.5f, 0.0f, -7.0f);
+	glScalef(0.75f, 0.75f, 0.75f);	// Position of glScalef(); is VVVIMP
+
+	glRotatef(cAngle, 1.0f, 0.0f, 0.0f);	// X-Rotation
+	glRotatef(cAngle, 0.0f, 1.0f, 0.0f);	// Y-Rotation
+	glRotatef(cAngle, 0.0f, 0.0f, 1.0f);	// Z-Rotation
+
+	// Step 13
+	glBindTexture(GL_TEXTURE_2D, texture_kundali);
+
+	glBegin(GL_QUADS);
+
+	// FRONT FACE - R	
+
+	// glColor3f(1.0f, 0.0f, 0.0f);
+	
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// RB
+
+	// RIGHT FACE - G	
+
+	// glColor3f(0.0f, 1.0f, 0.0f);
+	
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// RB
+
+	// BACK FACE - B
+
+	// glColor3f(0.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f); 
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);		// RB
+
+	// LEFT FACE - C	
+
+	// glColor3f(0.0f, 1.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);	// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// RB	
+
+	// TOP FACE - M
+
+	// glColor3f(1.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// RB
+
+	// BOTTOM FACE - Y
+
+	// glColor3f(1.0f, 1.0f, 0.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);	// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// RB
+
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, 0);		// Unbinding Discipline for Cube
 
 	SwapBuffers(ghdc);		// Win32 API. ghrc not used as it is an gl API that the windows DC wont understand
 
@@ -416,6 +678,24 @@ void display(void)
 void update(void)
 {
 	// Code
+
+	// Pyramid
+	pAngle = pAngle + 0.01f;		// pAngle in "degrees"
+
+	if (pAngle >= 360.0f)
+	{
+		pAngle = pAngle - 360.0f;
+		// pAngle = 0.0f; Also Works
+	}
+
+	// Cube
+	cAngle = cAngle - 0.008f;		// cAngle in "degrees"
+
+	if (cAngle <= 0.0f)
+	{
+		cAngle = cAngle + 360.0f;
+		// cAngle = 0.0f; Also Works
+	}
 }
 
 void uninitialize(void)
@@ -461,56 +741,19 @@ void uninitialize(void)
 			gpFile = NULL;
 		}
 
-}
-
-
-void Circle(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(1.0f);
-	glBegin(GL_LINE_STRIP);
-
-	float radius = 0.303f;
-	float x_centre = 0.0f;		// distance from X-Axis
-	float y_centre = -0.18960f;		// distance from Y-Axis
-	for (int i = 0; i < 1000; i++)
+	if (texture_kundali)
 	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex3f(radius * cos(angle) + x_centre, radius * sin(angle) + y_centre, 0.0f);		// centering circle
+		glDeleteTextures(1, &texture_kundali);
+		texture_kundali = 0;
 	}
-	glEnd();
+
+	if (texture_stone)
+	{
+		glDeleteTextures(1, &texture_stone);
+		texture_stone = 0;
+	}
 
 }
-
-void Triangle(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(1.50f);
-	glBegin(GL_LINE_STRIP);
-
-	glVertex3f(0.0f, 0.5f, 0.0f);	// Top
-	glVertex3f(0.5f, -0.5f, 0.0f);	// Right
-	glVertex3f(-0.5f, -0.5f, 0.0f);	// Left
-	glVertex3f(0.0f, 0.5f, 0.0f);	// Top
-
-	glEnd();
-}
-
-void Line(void)
-{
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glLineWidth(0.050f);
-	glBegin(GL_LINES);
-
-	glVertex3f(0.0f, 0.5f, 0.0f);	// Top
-	glVertex3f(0.0f, -0.5f, 0.0f);	// Bottom
-
-	glEnd();
-}
-
-
-
-
 
 
 
