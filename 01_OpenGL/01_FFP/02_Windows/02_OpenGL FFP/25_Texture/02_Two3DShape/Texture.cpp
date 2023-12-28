@@ -380,6 +380,8 @@ int initialize(void)
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);		// Step 2.5 (Optional)
 
+	// sphere = gluNewQuadric();
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// MessageBox(ghwnd, TEXT("Failed"), TEXT("Failed here"), MB_OK);

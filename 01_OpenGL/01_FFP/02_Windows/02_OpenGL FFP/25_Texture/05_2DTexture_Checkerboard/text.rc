@@ -1,0 +1,9 @@
+#include<windows.h>
+#include"OGL.h"
+
+// MY_STONE_BMP BITMAP Stone.bmp
+// MY_KUNDALI_BMP BITMAP Vijay_Kundali.bmp
+// MY_SMILEY_BMP BITMAP Smiley.bmp
+
+
+
