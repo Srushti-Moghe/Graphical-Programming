@@ -1,0 +1,1002 @@
+// Standard Header Files
+#include <stdio.h>  // for printf
+#include <stdlib.h> // for e.g exit() function
+#include <memory.h> // for memset (zeromemory in windows)
+
+// x11 header files
+#include <X11/Xlib.h>  // For All xWindow API
+#include <X11/Xutil.h> // For XVisualInfo and rrelated API
+#include <X11/XKBlib.h>
+
+// OpenGL Header Files
+#include <GL/gl.h>
+#include <GL/glx.h>
+
+// Global Variable Declarations
+Display *display = NULL;
+Colormap colormap;
+Window window;
+
+XVisualInfo *xVisualInfo = NULL;
+
+// Opengl Global Variables
+GLXContext glxContext = NULL;
+Bool bFullscreen = False;
+Bool bActiveWindow = False;
+
+FILE *gpFile =NULL;
+
+// Lerp()
+
+GLfloat lerp(GLfloat start, GLfloat end, GLfloat t)
+{
+	return (start + (end - start) * t);
+}
+
+
+GLfloat orange_R = 1.0f;
+GLfloat orange_G = 0.404f;
+GLfloat orange_B = 0.122f;
+
+GLfloat white_R = 1.0f;
+GLfloat white_G = 1.0f;
+GLfloat white_B = 1.0f;
+
+GLfloat green_R = 0.157f;
+GLfloat green_G = 0.416f;
+GLfloat green_B = 0.219f;
+
+// Letters Fly
+
+GLfloat B_x = -2.0f;
+GLfloat B_y = 0.0f;
+
+GLfloat H_x = -3.0f;
+GLfloat H_y = 1.0f;
+
+GLfloat A_x = -3.0f;
+GLfloat A_y = -1.0f;
+
+GLfloat R_x = 0.0f;
+GLfloat R_y = 0.0f;
+
+GLfloat RA_x = 0.0f;
+GLfloat RA_y = 0.0f;
+
+GLfloat T_x = 0.0f;
+GLfloat T_y = 0.0f;
+
+// Plane Fly
+
+GLfloat plane1_x = 0.0f;
+GLfloat plane1_y = 0.0f;
+
+GLfloat plane2_x = 0.0f;
+GLfloat plane2_y = 0.0f;
+
+GLfloat plane3_x = 0.0f;
+GLfloat plane3_y = 0.0f;
+
+GLfloat plane1_angle = 0.0f;
+GLfloat plane3_angle = 0.0f;
+
+
+
+// Macros
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 600
+
+int main(void)
+{
+    // Local function Declarations
+    void toggleFullscreen(void);
+    int initialize(void);
+    void resize(int, int);
+    void draw(void);
+    void update(void);
+    void uninitialize(void);
+
+    // Local Variable declarations
+    int defaultScreen;
+    XSetWindowAttributes windowAttributes;
+    int styleMask;
+    Atom windowMangerDelete;
+    XEvent event;
+    KeySym keySymbol;
+    int framebufferAttrubutes[] =
+        {
+            GLX_DOUBLEBUFFER, True,
+            GLX_RGBA,
+            GLX_RED_SIZE, 8,
+            GLX_GREEN_SIZE, 8,
+            GLX_BLUE_SIZE, 8,
+            GLX_ALPHA_SIZE, 8,
+            None};
+    Bool bDone = False;
+
+    int screenWidth, screenHeight;
+    char keys[26];
+
+    // code
+
+    gpFile = fopen("logFile.txt","w");
+    if(gpFile == NULL)
+    {
+        printf("fopen() Failed");
+    }
+    else
+    {
+       fprintf(gpFile,"Program Started Successfully\n");
+    }
+    // Step 1 : Open Connection with xServer and get display Interface
+    display = XOpenDisplay(NULL); 
+    if (display == NULL)
+    {
+        printf("XOpenDisplay() Failed\n");
+        uninitialize();
+        exit(1);
+    }
+
+    // Step 2: Get default screen from above function
+    defaultScreen = XDefaultScreen(display); 
+
+    // Step 4: Get Visual info from above Three steps
+    xVisualInfo = glXChooseVisual(display, defaultScreen, framebufferAttrubutes);
+
+    if (xVisualInfo == NULL)
+    {
+        printf("glXChooseVisual() Failed\n");
+        uninitialize();
+        exit(1);
+    }
+
+    // Step 5 : Set Window Attributes/Properties
+    memset((void *)&windowAttributes, 0, sizeof(XSetWindowAttributes));
+
+    windowAttributes.border_pixel = 0;
+    windowAttributes.background_pixel = XBlackPixel(display, xVisualInfo->screen); 
+    windowAttributes.background_pixmap = 0;
+    windowAttributes.colormap = XCreateColormap(display, XRootWindow(display, xVisualInfo->screen), xVisualInfo->visual, AllocNone); 
+
+    // Assign this colormap to global colormap
+    colormap = windowAttributes.colormap;
+
+    // Set the Style Of Window
+    styleMask = CWBorderPixel | CWBackPixel | CWColormap | CWEventMask;
+
+    // Step 6 : Create Window
+    window = XCreateWindow(display,
+                           XRootWindow(display, xVisualInfo->screen),
+                           0,
+                           0,
+                           WIN_WIDTH,
+                           WIN_HEIGHT,
+                           0,
+                           xVisualInfo->depth,
+                           InputOutput,
+                           xVisualInfo->visual,
+                           styleMask,
+                           &windowAttributes); 
+
+    if (!window)
+    {
+        printf("XCreateWindow() Failed\n");
+        uninitialize();
+        exit(1);
+    }
+
+    // Step 7 :  Specify to which event this Window should Responsed
+    XSelectInput(display, 
+		  window, 
+		  ExposureMask | VisibilityChangeMask | StructureNotifyMask | KeyPressMask | 	ButtonPressMask | PointerMotionMask | FocusChangeMask); 
+
+    // Step 8: Specify Window Manager Delete Atom
+    windowMangerDelete = XInternAtom(display, "WM_DELETE_WINDOW", True); 
+    
+    // Step 9 : Add/Set above atom as Protocol for Window Manager
+    XSetWMProtocols(display, window, &windowMangerDelete, 1); 
+
+    // Step 10 : Give Caption To the Window
+    XStoreName(display, window, "Srushti Moghe: X WIndows"); 
+
+    // Step 11 : Map/Show the Window
+    XMapWindow(display, window); 
+
+    // Center the Window
+    screenWidth = XWidthOfScreen(XScreenOfDisplay(display, xVisualInfo->screen));
+    screenHeight = XHeightOfScreen(XScreenOfDisplay(display, xVisualInfo->screen));
+
+    XMoveWindow(display, window, (screenWidth - WIN_WIDTH) / 2, (screenHeight - WIN_HEIGHT) / 2);
+
+    // openGL Initialization
+
+    initialize();
+
+    // Step 12 : Game Loop
+    while (bDone == False)
+    {
+        
+
+        while (XPending(display))
+        {
+            // memset the event structure
+            memset((void *)&event, 0, sizeof(XEvent));
+            XNextEvent(display, &event); 
+
+            switch (event.type)
+            {
+            case MapNotify:
+                break;
+            case FocusIn:
+                bActiveWindow = True;
+                break;
+            case FocusOut:
+                bActiveWindow = False;
+                break;
+            case ConfigureNotify:
+                resize(event.xconfigure.width,event.xconfigure.height);
+                break;
+            case ButtonPress:
+                switch (event.xbutton.button)
+                {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+
+            case KeyPress:
+            {
+                keySymbol = XkbKeycodeToKeysym(display, event.xkey.keycode, 0, 0); 
+                switch (keySymbol)
+                {
+                case XK_Escape:
+                bDone = True;
+                fprintf(gpFile,"Program Ended Successfully\n");
+                    break;
+
+                default:
+                    break;
+                }
+            }
+                XLookupString(&event.xkey, keys, sizeof(keys), NULL, NULL);
+                switch (keys[0])
+                {
+                case 'F':
+                case 'f':
+
+                    // code 
+                    
+                    if (bFullscreen == False)
+                    {
+                        toggleFullscreen();
+                        bFullscreen = True;
+                    }
+                    else
+                    {
+                        toggleFullscreen();
+                        bFullscreen = False;
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+            case 33:
+                bDone = True;
+                break;
+
+            default:
+                break;
+            }
+        }
+        
+        // Rendering
+        if(bActiveWindow==True)
+        {
+            draw();
+            
+            update();
+        }
+        
+    }
+
+    return 0;
+}
+
+void toggleFullscreen(void)
+{
+    // Local Variable Declarations
+    Atom windowManagerStateNormal;
+    Atom windowManagerStateFullscreen;
+    XEvent event;
+
+    // Code
+    // Step 1 : Get Atom from Window Manager
+    windowManagerStateNormal = XInternAtom(display, "_NET_WM_STATE", False);
+    // Step 2 : Window Manager State Full Screen
+    windowManagerStateFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+    // Step 3 : memset the event structure and fill it above two Atom
+    memset((void *)&event, 0, sizeof(XEvent));
+
+    event.type = ClientMessage;
+    event.xclient.window = window;
+    event.xclient.message_type = windowManagerStateNormal;
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = bFullscreen ? 0 : 1;
+    event.xclient.data.l[1] = windowManagerStateFullscreen;
+
+    // Step 4 :  Send the event
+    XSendEvent(display,
+               XRootWindow(display, xVisualInfo->screen),
+               False,                  // Dont pass event to child window / event propagation to child
+               SubstructureNotifyMask, // It informs that your size is changing, Substructure Notify Mask
+               &event);
+}
+
+int initialize(void)
+{
+    //Local Function Declarations
+    void resize(int,int);
+    // code
+    glxContext = glXCreateContext(display,xVisualInfo,NULL,True);
+
+    if(glxContext == NULL)
+    {
+        printf("glXCreateContext() Failed");
+        return -1;
+    }
+
+    //Make this context as current context
+    if(glXMakeCurrent(display,window,glxContext) == False)
+    {
+        printf("glXMakeCurrent() Failed");
+        return -2;
+    }
+
+    //usual openGL code
+    glClearColor(0.6627f, 0.6627f, 0.6627f, 1.0f);
+
+    //Warm-up resize call
+    resize(WIN_WIDTH,WIN_HEIGHT);
+}
+
+void resize(int width, int height)
+{
+	// Code
+	if (height <= 0)
+	{
+		height = 1;		// Precaution as height is a divisor, hence cannot be 0 or negative
+	}
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		gluPerspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
+
+		glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+}
+
+void draw(void)
+{
+    // Code
+
+	void staticBharat();
+	void plane(GLfloat color[]);
+
+	GLfloat orange[] = {orange_R, orange_G, orange_B};
+	GLfloat white[] = { white_R, white_G, white_B };
+	GLfloat green[] = {green_R, green_G, green_B};
+
+	glClear(GL_COLOR_BUFFER_BIT);		// To paint the window Blue after setting it in glClearColor()
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	staticBharat();
+	
+	glPushMatrix();
+	glTranslatef(plane1_x, plane1_y, 0.0f);
+	glRotatef(plane1_angle, 0.0f, 0.0f, 1.0f);
+	plane(orange);
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(plane2_x, plane2_y, 0.0f);
+	plane(white);
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(plane3_x, plane3_y, 0.0f);
+	glRotatef(plane3_angle, 0.0f, 0.0f, 1.0f);
+	plane(green);
+	glPopMatrix();
+
+    glXSwapBuffers(display,window);
+}
+
+void update(void)
+{
+	// Code
+
+	// Letters Fly
+
+	static GLfloat t1 = 0.0f;
+	B_x = lerp(-3.0f, -1.5f, t1);	
+	if (t1 < 1.0f)
+	{
+		t1 += 0.001f;
+	}
+
+	static GLfloat t2 = 0.0f;
+	H_x = lerp(-3.0f, -1.0f, t2);
+	H_y = lerp(1.0f, 0.0f, t2);
+	
+	if (t1 >= 1.0f && t2 < 1.0f)
+	{
+		t2 += 0.001f;
+	}
+
+	static GLfloat t3 = 0.0f;
+	A_x = lerp(-3.0f, -0.5f, t3);
+	A_y = lerp(-1.0f, 0.0f, t3);
+
+	if (t2 >= 1.0f && t3 < 1.0f)
+	{
+		t3 += 0.001f;
+	}
+
+	static GLfloat t4 = 0.0f;
+	R_x = lerp(3.0f, 0.0f, t4);
+	R_y = lerp(1.0f, 0.0f, t4);
+
+	if (t3 >= 1.0f && t4 < 1.0f)
+	{
+		t4 += 0.001f;
+	}
+	
+	static GLfloat t5 = 0.0f;
+	RA_x = lerp(3.0f, 0.5f, t5);
+	RA_y = lerp(-1.0f, 0.0f, t5);
+
+	if (t4 >= 1.0f && t5 < 1.0f)
+	{
+		t5 += 0.001f;
+	}
+
+	static GLfloat t6 = 0.0f;
+	T_x = lerp(3.0f, 1.2f, t6);
+	T_y = lerp(0.0f, 0.0f, t6);
+
+	if (t5 >= 1.0f && t6 < 1.0f)
+	{
+		t6 += 0.001f;
+	}
+
+	// Plane Fly IN
+
+	static GLfloat t1_plane = 0.0f;
+
+	plane1_x = lerp(-3.0f, -1.5f, t1_plane);
+	// plane1_y = lerp(1.5, 0.05f, t1_plane);
+	plane1_y = lerp(3.5, 0.05f, t1_plane);
+	plane1_angle = lerp(-90.0f, 0.0f, t1_plane);
+
+	plane2_x = lerp(-3.0f, -1.5f, t1_plane);
+	plane2_y = lerp(0.0, 0.0f, t1_plane);
+
+	plane3_x = lerp(-3.0f, -1.5f, t1_plane);
+	// plane3_y = lerp(-1.5, -0.05f, t1_plane);
+	plane3_y = lerp(-3.5, -0.05f, t1_plane);
+	plane3_angle = lerp(90.0f, 0.0f, t1_plane);
+
+
+	if (t6 >= 1.0f && t1_plane < 1.0f)
+	{
+		t1_plane += 0.0001f;
+	}
+
+	// Plane Fly STRAIGHT
+
+	static GLfloat t2_plane = 0.0f;
+
+	if (t1_plane >= 1.0f)
+	{
+		plane1_x = lerp(-1.5f, 1.5f, t2_plane);		
+		plane2_x = lerp(-1.5f, 1.5f, t2_plane);		
+		plane3_x = lerp(-1.5f, 1.5f, t2_plane);		
+		if (t1_plane >= 1.0f && t2_plane < 1.0f)
+		{
+			t2_plane += 0.0001f;
+		}
+	}
+	
+	// Plane Fly OUT
+
+	static GLfloat t3_plane = 0.0f;
+
+	if (t2_plane >= 1.0f)
+	{
+		plane1_x = lerp(1.5f, 3.0f, t3_plane);
+		// plane1_y = lerp(0.0, 1.5f, t3_plane);
+		plane1_y = lerp(0.0, 3.5f, t3_plane);
+		plane1_angle = lerp(0.0f, 90.0f, t3_plane);
+
+		plane2_x = lerp(1.5f, 3.0f, t3_plane);
+		plane2_y = lerp(0.0, 0.0f, t3_plane);
+
+		plane3_x = lerp(1.5f, 3.0f, t3_plane);
+		// plane3_y = lerp(0.0, -1.5f, t3_plane);
+		plane3_y = lerp(0.0, -3.5f, t3_plane);
+		plane3_angle = lerp(0.0f, -90.0f, t3_plane);
+
+		if (t2_plane >= 1.0f && t3_plane < 1.0f)
+		{
+			t3_plane += 0.0001f;
+		}
+	}
+
+}
+
+void uninitialize(void)
+{
+
+    // Local Variable Declarations
+    GLXContext currentGLXContext;
+
+    // code
+    if(xVisualInfo)
+    {
+        free(xVisualInfo);
+       xVisualInfo = NULL;
+    }
+
+    //UnCurrent the Context
+    currentGLXContext = glXGetCurrentContext();
+    if(currentGLXContext != NULL && currentGLXContext == glxContext)
+    {
+      glXMakeCurrent(display,0,0);
+    }
+
+    if(glxContext)
+    {
+        glXDestroyContext(display,glxContext);
+        glxContext = NULL;
+    }
+
+    if (window)
+    {
+        XDestroyWindow(display, window); 
+    }
+
+    if (colormap)
+    {
+        XFreeColormap(display, colormap); 
+    }
+
+    if (display)
+    {
+        XCloseDisplay(display); 
+        display = NULL;
+    }
+    
+    if(gpFile)
+    {
+        fprintf(gpFile,"Program Ended Successfully\n");
+        gpFile = NULL;
+    }
+
+}
+
+
+void plane(GLfloat color[])
+{
+	glScalef(0.5f, 0.5f, 0.5f);
+
+	// T1
+	glBegin(GL_QUADS);
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(-0.6f, 0.2f, 0.0f);		// LT
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(-0.6f, 0.0f, 0.0f);		// LB
+
+	glColor3f(0.662f, 0.662f, 0.662f);
+	glVertex3f(0.55f, 0.0f, 0.0f);		// RB
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.35f, 0.2f, 0.0f);		// RT
+
+	glEnd();
+
+	// T2
+	glBegin(GL_QUADS);
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+
+	glVertex3f(-0.6f, 0.0f, 0.0f);		// LT
+	glVertex3f(-0.6f, -0.15f, 0.0f);	// LB
+
+	glColor3f(0.662f, 0.662f, 0.662f);
+	glVertex3f(0.45f, -0.15f, 0.0f);	// RB
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.55f, 0.0f, 0.0f);		// RT
+
+	glEnd();
+
+	// T3
+	glBegin(GL_QUADS);
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.1f, 0.3f, 0.0f);		// LT
+
+	glColor3f(0.662f, 0.662f, 0.662f);
+	glVertex3f(0.05f, 0.2f, 0.0f);		// LB
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.35f, 0.2f, 0.0f);		// RB
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.25f, 0.3f, 0.0f);		// RT
+
+	glEnd();
+
+	// T4
+	glBegin(GL_QUADS);
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(-0.6f, 0.6f, 0.0f);		// LT
+	glVertex3f(-0.6f, 0.2f, 0.0f);		// LB
+	glVertex3f(-0.4f, 0.2f, 0.0f);		// RB
+	glVertex3f(-0.55f, 0.6f, 0.0f);		// RT
+	
+	glEnd();
+
+	// Smoke 
+	glBegin(GL_QUADS);
+
+	glColor3fv(color);
+
+	glVertex3f(-1.0f, 0.0f, 0.0f);		// LT
+	glVertex3f(-1.0f, -0.15f, 0.0f);	// LB
+	glVertex3f(-0.6f, -0.15f, 0.0f);	// RB
+	glVertex3f(-0.6f, 0.0f, 0.0f);		// RT
+
+	glEnd();
+
+}
+
+// staticBharat
+void staticBharat(void)
+{
+
+	void draw_B();
+	void draw_H();
+	void draw_A();
+	void draw_R();
+	void draw2_A();
+	void draw_T();
+	
+
+	glTranslatef(0.0f, 0.0f, -3.0f);
+
+	glPushMatrix();	
+	glTranslatef(B_x, 0.0f, 0.0f);
+	draw_B();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(H_x, H_y, 0.0f);
+	draw_H();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(A_x, A_y, 0.0f);
+	draw_A();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(R_x, R_y, 0.0f);
+	draw_R();
+	glPopMatrix();
+
+
+	glPushMatrix();
+	glTranslatef(RA_x, RA_y, 0.0f);
+	draw2_A();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(T_x, T_y, 0.0f);
+	draw_T();
+	glPopMatrix();
+
+}
+
+void draw_B()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	glBegin(GL_QUADS);
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.1f, 0.5f, 0.0f);		// RT
+	glVertex3f(0.0f, 0.5f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LB
+	glVertex3f(0.1f, 0.0f, 0.0f);		// RB	
+	glEnd();
+	glBegin(GL_QUADS);
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.1f, 0.0f, 0.0f);		// rt
+	glVertex3f(0.0f, 0.0f, 0.0f);		// lt			
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);
+	glVertex3f(0.1f, -0.5f, 0.0f);
+	glEnd();
+
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.4f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.5f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.1f, 0.0f, 0.0f);	//LB	
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 1
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, 0.4f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.4f, 0.0f);		// LT
+	glVertex3f(0.1f, 0.05f, 0.0f);	//LB	
+	glVertex3f(0.3f, 0.05f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); // green box 2
+glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RT	
+	glVertex3f(0.1f, 0.0f, 0.0f);	//LT
+glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.1f, -0.5f, 0.0f);  //LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 2
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, -0.05f, 0.0f);	//RT	
+	glVertex3f(0.1f, -0.05f, 0.0f);	//LT	
+	glVertex3f(0.1f, -0.4f, 0.0f);  //LB	
+	glVertex3f(0.3f, -0.4f, 0.0f);	//RB		
+	glEnd();
+
+
+}
+
+void draw_H()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	//upper main quad
+	glBegin(GL_QUADS); // orange box 1
+glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.4f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.5f, 0.0f);		// LT
+glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);	//LB	
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.4f, 0.0f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LT
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);	//LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 1
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.5f, 0.0f);		// LT
+	glVertex3f(0.1f, 0.05f, 0.0f);	//LB	
+	glVertex3f(0.3f, 0.05f, 0.0f);	//RB
+	glEnd();
+	glBegin(GL_QUADS); //black box 2
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, -0.05f, 0.0f);	//RT	
+	glVertex3f(0.1f, -0.05f, 0.0f);	//LT	
+	glVertex3f(0.1f, -0.5f, 0.0f);  //LB	
+	glVertex3f(0.3f, -0.5f, 0.0f);	//RB		
+	glEnd();
+
+}
+
+void draw_A()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	//upper main quad
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.4f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.5f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);	//LB	
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); // orange box 1
+glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.4f, 0.0f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LT
+glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);	//LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 1
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, 0.4f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.4f, 0.0f);		// LT
+	glVertex3f(0.1f, 0.05f, 0.0f);	//LB	
+	glVertex3f(0.3f, 0.05f, 0.0f);	//RB
+	glEnd();
+	glBegin(GL_QUADS); //black box 2
+glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, -0.05f, 0.0f);	//RT	
+	glVertex3f(0.1f, -0.05f, 0.0f);	//LT	
+	glVertex3f(0.1f, -0.5f, 0.0f);  //LB	
+	glVertex3f(0.3f, -0.5f, 0.0f);	//RB		
+	glEnd();
+
+}
+
+void draw_R()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	//upper main quad
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.4f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.5f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);	//LB	
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); // green box 1
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.4f, 0.0f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LT
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);	//LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 1
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, 0.4f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.4f, 0.0f);		// LT
+	glVertex3f(0.1f, 0.05f, 0.0f);	//LB	
+	glVertex3f(0.3f, 0.05f, 0.0f);	//RB
+	glEnd();
+	glBegin(GL_QUADS); //black box 2
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.4f, -0.05f, 0.0f);	//RT	
+	glVertex3f(0.1f, -0.05f, 0.0f);	//LT	
+	glVertex3f(0.1f, -0.5f, 0.0f);  //LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB		
+	glEnd();
+
+	glBegin(GL_QUADS); // R slant
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.2f, -0.035f, 0.0f);		// RT 				
+	glVertex3f(0.090f, -0.035f, 0.0f);		// LT
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.35f, -0.5f, 0.0f);	//LB	
+	glVertex3f(0.45f, -0.5f, 0.0f);	//RB
+	glEnd();
+}
+void draw2_A()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	//upper main quad
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.4f, 0.5f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.5f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);	//LB	
+	glVertex3f(0.4f, 0.0f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.4f, 0.0f, 0.0f);		// RT 				
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LT
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);	//LB	
+	glVertex3f(0.4f, -0.5f, 0.0f);	//RB
+	glEnd();
+
+	glBegin(GL_QUADS); //black box 1
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, 0.4f, 0.0f);		// RT 				
+	glVertex3f(0.1f, 0.4f, 0.0f);		// LT
+	glVertex3f(0.1f, 0.05f, 0.0f);	//LB	
+	glVertex3f(0.3f, 0.05f, 0.0f);	//RB
+	glEnd();
+	glBegin(GL_QUADS); //black box 2
+	glColor3f(0.662f, 0.662f, 0.662f);
+
+	glVertex3f(0.3f, -0.05f, 0.0f);	//RT	
+	glVertex3f(0.1f, -0.05f, 0.0f);	//LT	
+	glVertex3f(0.1f, -0.5f, 0.0f);  //LB	
+	glVertex3f(0.3f, -0.5f, 0.0f);	//RB		
+	glEnd();
+
+}
+void draw_T()
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	glBegin(GL_QUADS);
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.1f, 0.4f, 0.0f);		// RT
+	glVertex3f(0.0f, 0.4f, 0.0f);		// LT
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.0f, 0.0f, 0.0f);		// LB
+	glVertex3f(0.1f, 0.0f, 0.0f);		// RB	
+	glEnd();
+	glBegin(GL_QUADS);
+	glColor3f(white_R, white_G, white_B);
+	glVertex3f(0.1f, 0.0f, 0.0f);		// rt
+	glVertex3f(0.0f, 0.0f, 0.0f);		// lt			
+	glColor3f(green_R, green_G, green_B);
+	glVertex3f(0.0f, -0.5f, 0.0f);
+	glVertex3f(0.1f, -0.5f, 0.0f);
+	glEnd();
+	glBegin(GL_QUADS); // orange box 1
+	glColor3f(orange_R, orange_G, orange_B);
+	glVertex3f(0.3f, 0.5f, 0.0f);		// RT 		
+	glVertex3f(-0.2f, 0.5f, 0.0f);		// LT	
+	glVertex3f(-0.2f, 0.4f, 0.0f);		// LB 		
+	glVertex3f(0.3f, 0.4f, 0.0f);		// RB		
+
+	glEnd();
+}
+
+
+
+
+
+
+
+
+
+
+
+

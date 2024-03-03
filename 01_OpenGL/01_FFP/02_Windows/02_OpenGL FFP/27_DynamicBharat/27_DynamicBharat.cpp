@@ -41,6 +41,14 @@ BOOL gbFullscreen = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;		// Handle to GL Rendering Context
 
+// Lerp()
+
+GLfloat lerp(GLfloat start, GLfloat end, GLfloat t)
+{
+	return (start + (end - start) * t);
+}
+
+// Colors
 
 GLfloat orange_R = 1.0f;
 GLfloat orange_G = 0.404f;
@@ -54,11 +62,6 @@ GLfloat green_R = 0.157f;
 GLfloat green_G = 0.416f;
 GLfloat green_B = 0.219f;
 
-GLfloat lerp(GLfloat start, GLfloat end, GLfloat t)
-{
-	return (start + (end - start) * t);
-}
-
 // Letters Fly
 
 GLfloat B_x = -2.0f;
@@ -70,14 +73,14 @@ GLfloat H_y = 1.0f;
 GLfloat A_x = -3.0f;
 GLfloat A_y = -1.0f;
 
-GLfloat R_x;
-GLfloat R_y;
+GLfloat R_x = 0.0f;
+GLfloat R_y = 0.0f;
 
-GLfloat RA_x;
-GLfloat RA_y;
+GLfloat RA_x = 0.0f;
+GLfloat RA_y = 0.0f;
 
-GLfloat T_x;
-GLfloat T_y;
+GLfloat T_x = 0.0f;
+GLfloat T_y = 0.0f;
 
 // Plane Fly
 
@@ -453,7 +456,7 @@ void display(void)
 	glLoadIdentity();
 
 	staticBharat();
-
+	
 	glPushMatrix();
 	glTranslatef(plane1_x, plane1_y, 0.0f);
 	glRotatef(plane1_angle, 0.0f, 0.0f, 1.0f);
@@ -535,71 +538,68 @@ void update(void)
 		t6 += 0.001f;
 	}
 
-	// Plane Fly
+	// Plane Fly IN
 
 	static GLfloat t1_plane = 0.0f;
+
 	plane1_x = lerp(-3.0f, -1.5f, t1_plane);
-	plane1_y = lerp(1.5, 0.05f, t1_plane);
+	// plane1_y = lerp(1.5, 0.05f, t1_plane);
+	plane1_y = lerp(3.5, 0.05f, t1_plane);
 	plane1_angle = lerp(-90.0f, 0.0f, t1_plane);
 
 	plane2_x = lerp(-3.0f, -1.5f, t1_plane);
 	plane2_y = lerp(0.0, 0.0f, t1_plane);
 
 	plane3_x = lerp(-3.0f, -1.5f, t1_plane);
-	plane3_y = lerp(-1.5, -0.05f, t1_plane);
+	// plane3_y = lerp(-1.5, -0.05f, t1_plane);
+	plane3_y = lerp(-3.5, -0.05f, t1_plane);
 	plane3_angle = lerp(90.0f, 0.0f, t1_plane);
 
 
 	if (t6 >= 1.0f && t1_plane < 1.0f)
 	{
-		t1_plane += 0.001f;
+		t1_plane += 0.0001f;
 	}
 
-	// Plane Fly IN
+	// Plane Fly STRAIGHT
 
 	static GLfloat t2_plane = 0.0f;
 
 	if (t1_plane >= 1.0f)
 	{
-		plane1_x = lerp(-1.5f, 1.5f, t2_plane);
-		// plane1_y = lerp(1.0, 0.0f, t1_plane);
-		// plane1_angle = lerp(-90.0f, 0.0f, t1_plane);
-
-		plane2_x = lerp(-1.5f, 1.5f, t2_plane);
-		// plane2_y = lerp(0.0, 0.0f, t1_plane);
-
-		plane3_x = lerp(-1.5f, 1.5f, t2_plane);
-		// plane3_y = lerp(-1.0, 0.0f, t1_plane);
-		// plane3_angle = lerp(90.0f, 0.0f, t1_plane);
-
+		plane1_x = lerp(-1.5f, 1.5f, t2_plane);		
+		plane2_x = lerp(-1.5f, 1.5f, t2_plane);		
+		plane3_x = lerp(-1.5f, 1.5f, t2_plane);		
 		if (t1_plane >= 1.0f && t2_plane < 1.0f)
 		{
-			t2_plane += 0.001f;
+			t2_plane += 0.0001f;
 		}
 	}
 	
-		// Plane Fly OUT
+	// Plane Fly OUT
 
-		static GLfloat t3_plane = 0.0f;
+	static GLfloat t3_plane = 0.0f;
 
-		if (t2_plane >= 1.0f)
+	if (t2_plane >= 1.0f)
+	{
+		plane1_x = lerp(1.5f, 3.0f, t3_plane);
+		// plane1_y = lerp(0.0, 1.5f, t3_plane);
+		plane1_y = lerp(0.0, 3.5f, t3_plane);
+		plane1_angle = lerp(0.0f, 90.0f, t3_plane);
+
+		plane2_x = lerp(1.5f, 3.0f, t3_plane);
+		plane2_y = lerp(0.0, 0.0f, t3_plane);
+
+		plane3_x = lerp(1.5f, 3.0f, t3_plane);
+		// plane3_y = lerp(0.0, -1.5f, t3_plane);
+		plane3_y = lerp(0.0, -3.5f, t3_plane);
+		plane3_angle = lerp(0.0f, -90.0f, t3_plane);
+
+		if (t2_plane >= 1.0f && t3_plane < 1.0f)
 		{
-			plane1_x = lerp(1.5f, 3.0f, t3_plane);
-			plane1_y = lerp(0.0, 1.5f, t3_plane);
-			plane1_angle = lerp(0.0f, 90.0f, t3_plane);
-
-			plane2_x = lerp(1.5f, 3.0f, t3_plane);
-			plane2_y = lerp(0.0, 0.0f, t3_plane);
-
-			plane3_x = lerp(1.5f, 3.0f, t3_plane);
-			plane3_y = lerp(0.0, -1.5f, t3_plane);
-			plane3_angle = lerp(0.0f, -90.0f, t3_plane);
-
-			if (t2_plane >= 1.0f && t3_plane < 1.0f)
-			{
-				t3_plane += 0.001f;
-			}
+			t3_plane += 0.0001f;
 		}
+	}
 
 }
 
@@ -738,7 +738,7 @@ void staticBharat(void)
 	void draw_R();
 	void draw2_A();
 	void draw_T();
-	void plane();
+	
 
 	glTranslatef(0.0f, 0.0f, -3.0f);
 
