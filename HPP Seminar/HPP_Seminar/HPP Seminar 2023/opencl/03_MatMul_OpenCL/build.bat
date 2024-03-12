@@ -1,0 +1,2 @@
+cl.exe 03_MatMul_OpenCL.cpp /I "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include" /link /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64" OpenCL.lib
+03_MatMul_OpenCL.exe

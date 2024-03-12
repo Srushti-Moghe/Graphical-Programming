@@ -1,0 +1,2 @@
+cl.exe 02_Hello_OpenCL.cpp /I "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include" /link /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64" OpenCL.lib
+02_Hello_OpenCL.exe

@@ -1,0 +1,1 @@
+cl.exe 01_DevProp_OpenCL.cpp /I "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64\include" /link /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64" OpenCL.lib

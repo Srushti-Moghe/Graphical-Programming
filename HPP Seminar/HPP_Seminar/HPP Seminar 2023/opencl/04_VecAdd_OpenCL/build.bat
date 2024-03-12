@@ -1,0 +1,2 @@
+cl.exe 04_VecAdd_OpenCL.cpp /I "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\include" /link /LIBPATH:"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.2\lib\x64" OpenCL.lib
+04_VecAdd_OpenCL.exe
