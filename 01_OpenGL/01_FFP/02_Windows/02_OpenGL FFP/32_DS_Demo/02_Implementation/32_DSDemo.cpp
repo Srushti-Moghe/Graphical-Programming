@@ -70,7 +70,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WNDCLASSEX wndclass;
 	HWND hwnd;
 	MSG msg;
-	TCHAR szAppName[] = TEXT( "RUMWindow"); // Text macro
+	TCHAR szAppName[] = TEXT( "Srushti Umesh Moghe"); // Text macro
 	int iresult=0;
 
 	BOOL bDone = FALSE; //sdk cha bool (not capital)

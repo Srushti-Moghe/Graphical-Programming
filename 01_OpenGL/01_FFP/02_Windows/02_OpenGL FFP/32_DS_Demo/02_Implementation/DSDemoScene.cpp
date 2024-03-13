@@ -9,21 +9,27 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+//OPENGL Header Files
+HDC ghdc = NULL;		// DC - Device context
+HGLRC ghrc = NULL;  // RC - Rendering Context
+
 // OpenGL Header Files
 #include <GL/gl.h>		// #include <gl\GL.h> Windows - not case sensitive
 #include <GL/glu.h>		
 #include "OGL.h"		// User defined header file
 
-// Macros
-#define WIN_WIDTH 800
-#define WIN_HEIGHT 600
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 // Link with OpenGL library
 #pragma comment(lib, "OpenGL32.lib")
-
 #pragma comment(lib, "glu32.lib")
-
 #pragma comment(lib, "winmm.lib") // for playsound
+
+// Macros
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 600
 
  // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -54,6 +60,10 @@ GLfloat lerp(GLfloat start, GLfloat end, GLfloat t)
 
 GLfloat S_x = 0.0f;
 GLfloat S_y = -0.15f;
+
+//texture object variables
+GLuint texture_title = 0;
+GLuint texture_credits = 0;
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
