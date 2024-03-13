@@ -6,12 +6,12 @@
 # include <mmsystem.h>
 
 //OPENGL Header Files
-HDC ghdc=NULL;		// DC - Device context
-HGLRC ghrc = NULL;  // RC - Rendering Context
+HDC ghdc=NULL;		
+HGLRC ghrc = NULL;  
 
 # include<gl/GL.h>
 # include <GL/glu.h>
-# include "OGL.h" //USER DEFINED - resorce file for icon
+# include "OGL.h" 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -35,11 +35,9 @@ FILE *gpFile = NULL; // file handle pointer for gpFile
 HWND ghwnd=NULL; //global window handle
 BOOL GbActive = FALSE;
 
-DWORD dwStyle = 0; // global window style (32Dword - 16+16 /8+8+8+8 Dword/loword/highword)
-WINDOWPLACEMENT wpPrev={sizeof(WINDOWPLACEMENT)}; // golbal initialization of window structure
-
-BOOL gbFullScreen = FALSE; // Toggle Boolean (TRUE/FALSE) -  variable for window full screen
-
+DWORD dwStyle = 0; 
+WINDOWPLACEMENT wpPrev={sizeof(WINDOWPLACEMENT)}; 
+BOOL gbFullScreen = FALSE; 
 BOOL cube1 = TRUE;
 BOOL cube2 = FALSE;
 
@@ -75,24 +73,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	BOOL bDone = FALSE; //sdk cha bool (not capital)
 
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);  //calculate center x,y co-ordinates
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);  
 	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 	int centerX= (screenWidth)/2 - (WIN_WIDTH /2);
 	int centerY= (screenHeight)/2 - (WIN_HEIGHT / 2);
 
 	//code
-	gpFile = fopen("Log.txt","w"); //open gpfile in write mode 
-	//MessageBox(NULL, TEXT("initialize OPENED........"), TEXT("ERROR....."), MB_OK | MB_ICONERROR);
+	gpFile = fopen("Log.txt","w"); 
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("LOG FILE CAN NOT BE OPENED........"), TEXT("ERROR....."), MB_OK | MB_ICONERROR);
 		exit(0);
 	}
-	fprintf(gpFile," Program started successfully......!!!\n"); //ANSI string from stdio.h not from sys32lib
+	fprintf(gpFile," Program started successfully......!!!\n"); 
 	
-	// WNDCLASSEX initialization - Struct def with 12 members
+	// WNDCLASSEX initialization - Struct 
 	wndclass.cbSize = sizeof(WNDCLASSEX);
-	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; // CS_OWNDC - maza device context-Class chya ownership(user chya) madhe rahil
+	wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; 
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
 	wndclass.lpfnWndProc = WndProc;
@@ -122,7 +119,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		hInstance,
 		NULL);
 
-	ghwnd = hwnd; // local window handle to global window handle
+	ghwnd = hwnd; 
 
 	//initialization of window
 	
@@ -137,18 +134,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	ShowWindow(hwnd, iCmdShow); 
 
-	SetForegroundWindow(hwnd); // ZORDER - madhe hi window pudhe aan 
-	SetFocus(hwnd);//internally this is send to wndproc la pathavto
+	SetForegroundWindow(hwnd); 
+	SetFocus(hwnd);
 	
 	// Game loop 
 
 	while (bDone == FALSE )
 	{
-		if(PeekMessage(&msg,NULL,0,0,PM_REMOVE)) //5th param- remove nahi kela msg tar it will stuck in the msg-queue
+		if(PeekMessage(&msg,NULL,0,0,PM_REMOVE)) 
 		{
 			if(msg.message==WM_QUIT)
 			{
-				bDone=TRUE; //exits the loop (inital value is FALSE!)
+				bDone=TRUE; //exits the loop 
 			}
 			else
 			{
@@ -161,7 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		{
 
 			{
-				if (GbActive == TRUE) //GbActiveWindow
+				if (GbActive == TRUE) 
 				{
 					//render
 					display();
@@ -272,15 +269,15 @@ void ToggleFullscreen(void)
 	}
 	else 
 	{
-		SetWindowPlacement(ghwnd,&wpPrev); //1
-		SetWindowLong(ghwnd,GWL_STYLE ,dwStyle | WS_OVERLAPPEDWINDOW); //2
+		SetWindowPlacement(ghwnd,&wpPrev); 
+		SetWindowLong(ghwnd,GWL_STYLE ,dwStyle | WS_OVERLAPPEDWINDOW);
 		SetWindowPos(ghwnd,
 		HWND_TOP,
 		0,
 		0,
 		0,
 		0,
-		SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED); //3
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED); 
 		ShowCursor(TRUE);
 	}
 	
@@ -294,7 +291,7 @@ int initialize(void)
 	// function declarations
 	PIXELFORMATDESCRIPTOR pfd;
 	int iPixelFormatIndex=0;
-	ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR)); //one of the way of initialising 
+	ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR)); 
 	BOOL bResult ;
 
 	// initialiszation of pfd 9 members
@@ -316,8 +313,8 @@ int initialize(void)
 		return(-1);
 	}
 
-	iPixelFormatIndex = ChoosePixelFormat(ghdc,&pfd); // take ghdc compare with pfd 
-	if(iPixelFormatIndex == 0) // if fetches successfully it is >0
+	iPixelFormatIndex = ChoosePixelFormat(ghdc,&pfd); 
+	if(iPixelFormatIndex == 0) 
 	{
 		fprintf(gpFile,"ChoosePixelFormat() FAILED .....!!!\n");
 		return(-2);
@@ -343,14 +340,14 @@ int initialize(void)
 	}
 
 	//enabling depth
-	glShadeModel (GL_SMOOTH); // lighting  and cloring shades smooth krayla //beautification
-	glClearDepth (1.0f); //2-compulsory  depth buffer clear karayla 1.0f vapyaychi
-	glEnable(GL_DEPTH_TEST); // 3rd compulsory
-	glDepthFunc(GL_LEQUAL); //4 compulsory
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);		// Step 2.5 (Optional beautification)
+	glShadeModel (GL_SMOOTH); 
+	glClearDepth (1.0f);
+	glEnable(GL_DEPTH_TEST); 
+	glDepthFunc(GL_LEQUAL); 
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);		
 
 	// set the clear color of window to BLUE
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // here OpelGl starts
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
 
 	//loading images to create texture
 
@@ -391,7 +388,6 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-//gluBuild2DMipmaps(GL_TEXTURE_2D,3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void*)bmp.bmBits);
 gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void*)bmp.bmBits);
 
 glBindTexture(GL_TEXTURE_2D, 0);
@@ -446,11 +442,11 @@ void resize(int width ,int height)
 {
 	//code
 	if (height <= 0)
-		height = 1; // precaution for division	
+		height = 1; 
 	
 	glMatrixMode(GL_PROJECTION); 
 	glLoadIdentity();
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height ); //zoomed binacular view (limited)
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height ); 
 	gluPerspective (45.0f,( (GLfloat)width / (GLfloat)height ), 0.1f, 100.0f);	
 }
 
@@ -597,9 +593,8 @@ void uninitialize(void)
 	void ToggleFullscreen(void);
 	
 	//code
-	//application is exitting in full screen
 
-	if(gbFullScreen == TRUE) //on ESCAPE Key- pressed event
+	if(gbFullScreen == TRUE) 
 	{
 		ToggleFullscreen();
 		gbFullScreen = FALSE;
