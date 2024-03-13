@@ -4,32 +4,20 @@
 #include <windows.h>	// Win32 API
 #include <stdlib.h>		// For exit()
 #include <stdio.h>		// For FileIO
-# include <mmsystem.h>
-
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-//OPENGL Header Files
-HDC ghdc = NULL;		// DC - Device context
-HGLRC ghrc = NULL;  // RC - Rendering Context
 
 // OpenGL Header Files
 #include <GL/gl.h>		// #include <gl\GL.h> Windows - not case sensitive
 #include <GL/glu.h>		
 #include "OGL.h"		// User defined header file
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-
-// Link with OpenGL library
-#pragma comment(lib, "OpenGL32.lib")
-#pragma comment(lib, "glu32.lib")
-#pragma comment(lib, "winmm.lib") // for playsound
-
 // Macros
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
+
+// Link with OpenGL library
+#pragma comment(lib, "OpenGL32.lib")
+
+#pragma comment(lib, "glu32.lib")
 
  // Global Function Declarations / Function Prototype
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -53,17 +41,12 @@ BOOL gbFullscreen = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;		// Handle to GL Rendering Context
 
-GLfloat lerp(GLfloat start, GLfloat end, GLfloat t)
-{
-	return (start + (end - start) * t);
-}
+// GLfloat pAngle = 0.0f;	// For Rotating Pyramid
+GLfloat cAngle = 0.0f;	// For Rotating Cube
 
-GLfloat S_x = 0.0f;
-GLfloat S_y = -0.15f;
-
-//texture object variables
-GLuint texture_title = 0;
-GLuint texture_credits = 0;
+// Texture Object
+// GLuint texture_stone = 0;
+GLuint texture_kundali = 0;
 
 // Entry Point Function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -86,7 +69,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	HDC hdc; // One of the two arguments required for GetDeviceCaps
 	hdc = GetDC(NULL);
-
 	
 
 	// Centering Window
@@ -102,7 +84,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	
 	// Code
 	
-	gpFile = fopen("Static_Bharat.txt", "w");
+	gpFile = fopen("25_Texture_2DTexture_Smiley.txt", "w");
 	if (gpFile == NULL)
 	{
 		MessageBox(NULL, TEXT("Log File cannot be opened"), TEXT("Error"), MB_OK | MB_ICONERROR);
@@ -146,8 +128,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	ghwnd = hwnd;
 
+	
+
 	// Initialization
 	iResult = initialize();
+
+	// MessageBox(ghwnd, TEXT("Failed"), TEXT("Failed here"), MB_OK);
 
 	if (iResult != 0)
 	{
@@ -222,7 +208,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	// Body of the callback() - WndProc [User Defined]
 	switch(iMsg)
 	{
-	
 	case WM_SETFOCUS:		// Message for Active Window 
 		gbActive = TRUE;
 		break;
@@ -323,9 +308,14 @@ int initialize(void)
 	// Prototype Declarations
 	void resize(int, int);	// Warmup resize call
 
+	BOOL loadGLTexture(GLuint*, TCHAR[]);
+
 	// Code
 	PIXELFORMATDESCRIPTOR pfd;
 	int iPixelFormatIndex = 0;
+
+	BOOL bResult;
+
 	ZeroMemory(&pfd, sizeof(PIXELFORMATDESCRIPTOR));		// struct initialization method02	
 
 	// Step1 Initialization of PIXELFORMATDESCRIPTOR
@@ -338,6 +328,9 @@ int initialize(void)
 	pfd.cGreenBits = 8;
 	pfd.cBlueBits = 8;
 	pfd.cAlphaBits = 8;
+
+	// Enabling Depth
+	pfd.cDepthBits = 32;	// Step 1 (Compulsory)
 
 	// Step2 Get DC
 	ghdc = GetDC(ghwnd);
@@ -377,46 +370,241 @@ int initialize(void)
 		return(-5);
 	}
 
-	// OpenGL starts here
-	// To Set Clear Color of window to Blue DOESNOT paint the window Blue
+	// Enabling Depth
+
+	glShadeModel(GL_SMOOTH);								// Step 2.4 (Optional)
+
+	glClearDepth(1.0f);										// Step 2.1 (Compulsory)
+	glEnable(GL_DEPTH_TEST);								// Step 2.2 (Compulsory)
+	glDepthFunc(GL_LEQUAL);									// Step 2.3 (Compulsory) Comparing Function LEQUAL is Less than or Equal to glClearDepth(valuef)
+
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);		// Step 2.5 (Optional)
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// MessageBox(ghwnd, TEXT("Failed"), TEXT("Failed here"), MB_OK);
+
+	// Loading Images to create Texture
+
+	/* bResult = loadGLTexture(&texture_stone, MAKEINTRESOURCE(MY_STONE_BMP));
+	// Error Checking
+	if (bResult == FALSE)
+	{
+		fprintf(gpFile, "Loading of stone texture thread Failed...\n");
+		return(-6);
+	}
+	*/
+
+	bResult = loadGLTexture(&texture_kundali, MAKEINTRESOURCE(MY_KUNDALI_BMP));
+	// Error Checking
+	if (bResult == FALSE)
+	{
+		fprintf(gpFile, "Loading of kundali texture thread Failed...\n");
+		return(-7);
+	}
+
+	// Tell OpenGL to enable the texture
+	glEnable(GL_TEXTURE_2D);
 
 	resize(WIN_WIDTH, WIN_HEIGHT);
 
+	// MessageBox(ghwnd, TEXT("Failed"), TEXT("Failed here"), MB_OK);
 
 	return(0);
 }
 
+// Function Definition
+
+BOOL loadGLTexture(GLuint* texture, TCHAR imageResourceID[]) 
+{
+	// Local Variable Declarations
+	HBITMAP hBitmap = NULL;
+	BITMAP bmp;
+
+	// Load the Image
+	hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);			// HMODULE GetModuleHandle (LPCTSTR lpModuleName);
+	if (hBitmap == NULL)
+	{
+		fprintf(gpFile, "Loading of Image Failed...\n");
+		return(FALSE);
+	}
+
+	// Step 6
+	GetObject(hBitmap, sizeof(BITMAP), &bmp);
+	// Step 7
+	glGenTextures(1, texture);
+
+	// Step 7 glBindTexture
+	glBindTexture(GL_TEXTURE_2D, *texture);		// glBindTexture(Binding Point (cuz of state machine) Macro, texture value);
+
+	// Step 8
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);				// glPixelStorei(GL_UNPACK_ALIGNMENT- checking the compression (compressed/uncompressed) of the image, 4- for R,G,B,alpha);
+	// glPixelStorei(GL_UNPACK_ALIGNMENT, 1);		   // glPixelStorei(GL_UNPACK_ALIGNMENT- checking the compression (compressed/uncompressed) of the image, 1); for Programmable Pipeline
+
+	// Set texture parameters Step 10
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);					// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER- magnifies the texture closer to viewer/camera, GL_LINEAR- give the image data linearly of high quality);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);		// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER- minifies the texture closer to viewer/camera, GL_LINEAR_MIPMAP_LINEAR- give the image data after MIPMAPPING depending on the Mipmap quality);
+
+	// Create multiple mipmap images Step 10
+
+	gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void*)bmp.bmBits);
+
+	// gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB/3 - .bmp image has only R,G,B,  bmp.bmWidth- image width, bmp.bmHeight- image height, 
+	// ... GL_BGR_EXT- Device independent bitmap image where theBGR is the reverse of RGB as windows uses Horizontally Flipped Images EXT-extended, GL_UNSIGNED_BYTE- RGBA are bits that are used to build Mipmaps
+	// ... bmp.bmBits give the address of glPixelStorei);
+
+	// Un-bind from the binding point Step 11
+
+	glBindTexture(GL_TEXTURE_2D, 0);		// glBindTexture(GL_TEXTURE_2D, 0- unbinding of the texture);
+
+	// Delete Image Resource Object Step 12 
+	DeleteObject(hBitmap);
+	hBitmap = NULL;
+
+	return(TRUE);
+}
+
 void resize(int width, int height)
 {
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	if (width > height)
+	// Code
+	if (height <= 0)
 	{
-		glOrtho((GLfloat)width / (GLfloat)height * -1.0f, (GLfloat)width / (GLfloat)height * 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+		height = 1;		// Precaution as height is a divisor, hence cannot be 0 or negative
 	}
-	else
-	{
-		glOrtho(-1.0f, 1.0f, (GLfloat)height / (GLfloat)width * -1.0f, (GLfloat)height / (GLfloat)width * 1.0f, -1.0f, 1.0f);
-	}
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		gluPerspective(45.0f, 
+					   (GLfloat)width / (GLfloat)height, 
+					   0.1f, 
+					   100.0f);
+
+		glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
 void display(void)
 {
 	// Code
-	
-	void scene(void);
-	
 
-	glClear(GL_COLOR_BUFFER_BIT);		// To paint the window Blue after setting it in glClearColor()	
+	// PYRAMID
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Step 3 (Compulsory)	// To paint the window Blue after setting it in glClearColor()
+
 	glMatrixMode(GL_MODELVIEW);
-
 	glLoadIdentity();
-	scene();
+
+	glTranslatef(0.0f, 0.0f, -4.0f);
+	glScalef(0.75f, 0.75f, 0.75f);	// Position of glScalef(); is VVVIMP
+
+	glRotatef(cAngle, 1.0f, 0.0f, 0.0f);	// X-Rotation
+	glRotatef(cAngle, 0.0f, 1.0f, 0.0f);	// Y-Rotation
+	glRotatef(cAngle, 0.0f, 0.0f, 1.0f);	// Z-Rotation
+
+	glBindTexture(GL_TEXTURE_2D, texture_kundali);
+
+	glBegin(GL_QUADS);
+
+	// FRONT FACE - R	
+
+	// glColor3f(1.0f, 0.0f, 0.0f);
 	
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// RB
+
+	// RIGHT FACE - G	
+
+	// glColor3f(0.0f, 1.0f, 0.0f);
+	
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// RB
+
+	// BACK FACE - B
+
+	// glColor3f(0.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f); 
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);		// RB
+
+	// LEFT FACE - C	
+
+	// glColor3f(0.0f, 1.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);	// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// RB	
+
+	// TOP FACE - M
+
+	// glColor3f(1.0f, 0.0f, 1.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f);		// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f);		// RB
+
+	// BOTTOM FACE - Y
+
+	// glColor3f(1.0f, 1.0f, 0.0f);
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);		// RT
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);	// LT
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f);		// LB
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);		// RB
+
+	glEnd();
+
+	glBindTexture(GL_TEXTURE_2D, 0);		// Unbinding Discipline for Cube
+
 	SwapBuffers(ghdc);		// Win32 API. ghrc not used as it is an gl API that the windows DC wont understand
 
 }
@@ -424,13 +612,25 @@ void display(void)
 void update(void)
 {
 	// Code
-	static GLfloat t1 = 0.0f;
-	S_x = lerp(0.0f, 0.0f, t1);
-	S_y = lerp(-0.15f, 1.0f, t1);
 
-	if (t1 < 1.0f)
+	/*  Pyramid
+	pAngle = pAngle + 0.01f;		// pAngle in "degrees"
+
+	if (pAngle >= 360.0f)
 	{
-		t1 += 0.01f;
+		pAngle = pAngle - 360.0f;
+		// pAngle = 0.0f; Also Works
+	}
+	*/
+
+
+	// Cube
+	cAngle = cAngle - 0.008f;		// cAngle in "degrees"
+
+	if (cAngle <= 0.0f)
+	{
+		cAngle = cAngle + 360.0f;
+		// cAngle = 0.0f; Also Works
 	}
 }
 
@@ -477,216 +677,19 @@ void uninitialize(void)
 			gpFile = NULL;
 		}
 
+	if (texture_kundali)
+	{
+		glDeleteTextures(1, &texture_kundali);
+		texture_kundali = 0;
+	}
+
+	/* if (texture_stone)
+	{
+		glDeleteTextures(1, &texture_stone);
+		texture_stone = 0;
+	}
+	*/
 }
-
-
-// scene
-void scene(void)
-{
-	void cloud(void);
-	void BackgroundLines(void);
-
-	// background Lines
-	BackgroundLines();
-
-	// Partition Line	
-	
-	glLineWidth(1.50f);
-	glBegin(GL_LINES);
-
-	glColor3f(0.227, 0.49, 0.0);
-	glVertex3f(-10.0f, -0.3f, 0.0f);
-	glColor3f(0.98, 0.82, 0.024);
-	glVertex3f(10.0f, -0.3f, 0.0f);
-
-	glEnd();
-
-	// Sun
-
-	glBegin(GL_POLYGON);
-
-	float radius = 0.15f;
-	float x_centre = 0.00f;		// distance from X-Axis
-	float y_centre = -0.15f;			// distance from Y-Axis
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(x_centre + radius * cos(angle), y_centre + radius * sin(angle));
-		glColor3f(0.98, 0.82, 0.024);
-
-	}
-	glEnd();
-
-	// Water
-
-	glBegin(GL_QUADS); // Rectangle 
-
-	glColor3f(0.0, 0.306, 0.522);			// Dark
-	glVertex3f(-10.0f, -4.5f, 0.0f);		// LB
-
-	glColor3f(0.004, 0.584, 0.988);			// Light
-	glVertex3f(-0.4f, -0.25f, 0.0f);		// LT
-	glVertex3f(0.4f, -0.25f, 0.0f);			// RT
-
-	glColor3f(0.0, 0.306, 0.522);			// Dark
-	glVertex3f(10.0f, -4.5f, 0.0f);		    // RB
-
-	glEnd();
-
-
-	// Vegetation
-	
-	// Right
-	glPushMatrix();
-	glTranslatef(0.4f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(0.8f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(1.2f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(1.6f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-
-	// Left
-	
-	glPushMatrix();
-	glTranslatef(-0.4f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(-0.8f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(-1.2f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();
-	glPushMatrix();
-	glTranslatef(-1.6f, -0.25f, 0.0f);
-	cloud();
-	glPopMatrix();	
-
-}
-
-// vegetation
-void cloud(void)
-{
-	glScalef(0.5f, 0.5f, 0.0f);
-
-	glColor3f(0.0, 0.549, 0.149); 
-
-	glBegin(GL_QUADS); // Rectangle 
-	glVertex3f(-0.3f, -0.18f, 0.0f);		// Q3
-	glVertex3f(-0.3f, 0.15f, 0.0f);			// Q2
-	glVertex3f(0.3f, 0.15f, 0.0f);			// Q1
-	glVertex3f(0.3f, -0.18f, 0.0f);			// Q4
-	glEnd();
-		
-	glBegin(GL_POLYGON);			// Circle 1
-	float radius_1 = 0.18f;
-	float x_centre_1 = -0.30f;
-	float y_centre_1 = 0.00f;
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(x_centre_1 + radius_1 * cos(angle), y_centre_1 + radius_1 * sin(angle));
-	}
-	glEnd();
-
-	glBegin(GL_POLYGON);			// Circle 2
-	float radius_2 = 0.15f;
-	float x_centre_2 = -0.10f;
-	float y_centre_2 = 0.20f;
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(x_centre_2 + radius_2 * cos(angle), y_centre_2 + radius_2 * sin(angle));
-	}
-	glEnd();
-
-	glBegin(GL_POLYGON);			// Circle 3
-	float radius_3 = 0.20f;
-	float x_centre_3 = 0.16f;
-	float y_centre_3 = 0.26f;
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(x_centre_3 + radius_3 * cos(angle), y_centre_3 + radius_3 * sin(angle));
-	}
-	glEnd();
-
-	glBegin(GL_POLYGON);			// Circle 4
-	float radius_4 = 0.18f;
-	float x_centre_4 = 0.30f;
-	float y_centre_4 = 0.00f;
-	for (int i = 0; i < 1000; i++)
-	{
-		float angle = 2.0f * M_PI * i / 1000;
-		glVertex2f(x_centre_4 + radius_4 * cos(angle), y_centre_4 + radius_4 * sin(angle));
-	}
-	glEnd();
-
-}
-
-// Background Lines
-void BackgroundLines(void)
-{
-	static int flag = 0;
-	static float move = 0;
-	// glLineWidth(0.5f);
-	glColor4f(0.012f, 0.259f, 0.413, 0.5f);
-
-	// Lines
-	// glTranslatef(0.0f, 0.0f, -3.0f);
-
-	int i, j, n = 35;
-	float lineHeight_1 = 0.01f;
-	// float lineHeight_2 = 0.6f;
-
-	GLfloat t = 0.0f;
-	for (j = 0; j < n; j++)
-	{
-
-		t = rand() % RAND_MAX * move / 100000.0f;
-		glPushMatrix();
-		glTranslatef(0.0f, -t, 0.0f);
-		for (i = 0; i < n; i++)
-		{
-			if (i % 2 == 0)
-			{
-				lineHeight_1 = 0.005f;
-			}
-			else
-			{
-				lineHeight_1 = 0.015f;
-			}
-			// srand(time(0));
-			glBegin(GL_LINES);
-
-			// glColor4f(0.173f, 0.91f, 0.039f, 0.5f);
-			glVertex3f(lerp(2.00f, -2.00f, (GLfloat)j / (GLfloat)n), lerp(1.0f, -1.0f, (GLfloat)i / (GLfloat)n), 0.0f);
-
-			// glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
-			glVertex3f(lerp(2.00f, -2.00f, (GLfloat)j / (GLfloat)n), lerp(1.0f, -1.0f, (GLfloat)i / (GLfloat)n) - lineHeight_1, 0.0f);
-
-			glEnd();
-		}
-		glPopMatrix();
-	}
-
-	move += 0.0006f;
-}
-
-
-
-
 
 
 

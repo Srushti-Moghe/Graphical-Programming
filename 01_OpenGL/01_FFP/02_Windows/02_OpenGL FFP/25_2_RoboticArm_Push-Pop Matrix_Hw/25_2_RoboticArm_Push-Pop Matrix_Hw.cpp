@@ -43,8 +43,7 @@ HGLRC ghrc = NULL;		// Handle to GL Rendering Context
 
 int shoulder = 0;
 int elbow = 0;
-
-GLUquadric* quadric = NULL; //Sphere 
+GLUquadric* quadric = NULL; // 
 
 
 // Entry Point Function
@@ -263,14 +262,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 			}
 		break;
 
-		case 'S': //shoulder movement
+		case 'S':
 			shoulder = (shoulder + 3) % 360;
 			break;
 		case 's':
 			shoulder = (shoulder - 3) % 360;
 			break;
 
-		case 'E': //elbow movement
+		case 'E':
 			elbow = (elbow + 3) % 360;
 			break;
 		case 'e':
@@ -401,7 +400,6 @@ int initialize(void)
 
 	quadric = gluNewQuadric();
 
-
 	resize(WIN_WIDTH, WIN_HEIGHT);
 
 
@@ -429,43 +427,54 @@ void resize(int width, int height)
 
 void display(void)
 {
-	//Code
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Now here screen gets colored as color mentioned in initialize()
-	glMatrixMode(GL_MODELVIEW); //
-	glLoadIdentity(); // Set Matrix to identity
+	// Code
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		// Step 3 (Compulsory)	// To paint the window Blue after setting it in glClearColor()
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	// Matrix STACK concept
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //although default mode is GL_FILL
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	glTranslatef(0.0f, 0.0f, -12.0f);
 
-	glPushMatrix(); //MT-1
+	glPushMatrix();
+
 	//Do transformation for ARM
-	glRotatef((GLfloat)shoulder, 0.0f, 0.0f, 1.0f); //glu library has z axis in place of x axis
-	//so raotate aroud z axis == rotate around x axis in following glTranslate
+	glRotatef((GLfloat)shoulder, 0.0f, 0.0f, 1.0f);
+
 	glTranslatef(1.0f, 0.0f, 0.0f);
 
-	glPushMatrix(); // to remember shoulder position -2
-	glScalef(2.0f, 0.5f, 1.0f); // shape shoulder
+	glPushMatrix();
+
+	glScalef(2.0f, 0.5f, 1.0f);
+
 	// Draw ARM
 	glColor3f(0.8f, 0.6f, 0.4f);
-	gluSphere(quadric, 0.5f, 10, 10); //draw actual shoulder
+	gluSphere(quadric, 0.5f, 10, 10);
+
 	//Pop the Matrix --> to come back to point where ARM ended
-	glPopMatrix(); //-2
+	glPopMatrix();
 
 	//Do transformation for Fore ARM in CTM(MT RT)
 	glTranslatef(1.0f, 0.0f, 0.0f);
+
 	glRotatef((GLfloat)elbow, 0.0f, 0.0f, 1.0f);
+
 	glTranslatef(1.0f, 0.0f, 0.0f);
-	glPushMatrix();  //-3
+
+	glPushMatrix();
+
 	glScalef(2.0f, 0.5f, 1.0f);
 
 	//Draw Fore ARM
 	glColor3f(0.8f, 0.6f, 0.4f);
 	gluSphere(quadric, 0.5f, 10, 10);
 
-	glPopMatrix();//-3
-	glPopMatrix();//-1
+	glPopMatrix();
+
+	glPopMatrix();
 
 	glEnd();
 
