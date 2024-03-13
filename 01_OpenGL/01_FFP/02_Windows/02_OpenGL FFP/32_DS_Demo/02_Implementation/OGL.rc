@@ -1,0 +1,10 @@
+//Windows header files 
+# include<windows.h>
+# include "OGL.h"
+
+MYICON ICON MyIcon.ico 
+MYSOUND SOUND DSDemo_Audio.wav
+
+
+
+
