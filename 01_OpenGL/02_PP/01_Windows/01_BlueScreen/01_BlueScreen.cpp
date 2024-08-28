@@ -6,6 +6,10 @@
 #include <stdio.h>		// For FileIO
 
 // OpenGL Header Files
+
+
+//OPENGL Header Files
+
 #include <gl/glew.h>	// This must be before #include <GL/gl.h>
 #include <GL/gl.h>		// #include <gl\GL.h> Windows - not case sensitive
 
@@ -410,18 +414,7 @@ void resize(int width, int height)
 	{
 		height = 1;		// Precaution as height is a divisor, hence cannot be 0 or negative
 	}
-		
-	// To be deleted for PP
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-
-		// To be deleted for PP
-		/* gluPerspective(45.0f,
-					   (GLfloat)width / (GLfloat)height, 
-					   0.1f, 
-					   100.0f);
-		*/
-		glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
 void display(void)
@@ -482,6 +475,9 @@ void uninitialize(void)
 		}
 
 }
+
+
+
 
 
 

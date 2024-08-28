@@ -68,7 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	WNDCLASSEX wndclass;
 	HWND hwnd;
 	MSG msg;
-	TCHAR szAppName[] = TEXT("SUMWindow");
+	TCHAR szAppName[] = TEXT("SUM Window");
 	
 	// Function Declarations / Prototype
 
@@ -367,24 +367,23 @@ int initialize(void)
 
 	// Vertex Shader
 	const GLchar* vertexShaderSourceCode =
-		"#version 460 core" \
-		"\n" \
-		"in vec4 aPosition;" \
-		"in vec4 aColor;" \
-		"out vec4 oColor;" \
-		"void main(void)" \
-		"{" \
-		"gl_Position = aPosition;" \
-		"oColor = aColor;" \
-		"}";
+											"#version 440 core \n" \
+											"\n" \
+											"in vec4 aPosition; \n" \
+											"in vec4 aColor; \n" \
+											"out vec4 oColor; \n" \
+											"void main(void) \n" \
+											"{ \n" \
+											"gl_Position = aPosition; \n" \
+											"oColor = aColor;\n" \
+											"} \n";
 
-	vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+	GLuint vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL);
 	glCompileShader(vertexShaderObject);
 
 	GLint status = 0;
 	GLint infoLogLength = 0;
-	// GLint GLchar* = NULL;
 	GLchar* szInfoLog = NULL;
 
 	glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &status);
@@ -393,36 +392,35 @@ int initialize(void)
 		glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &infoLogLength);
 		if (infoLogLength > 0)
 		{
-				szInfoLog = (GLchar*)malloc(infoLogLength);
-		
-			if (szInfoLog != NULL)
+			szInfoLog = (GLchar*)malloc(infoLogLength);
+			if (infoLogLength != NULL)
 			{
-				glGetShaderInfoLog(vertexShaderObject, infoLogLength, NULL, szInfoLog);
-		
-			fprintf(gpFile, "Vertex Shader compilation Error Log : %s \n", szInfoLog);
-			free(szInfoLog);
-			szInfoLog = NULL;
+			glGetShaderInfoLog(vertexShaderObject, infoLogLength, NULL, szInfoLog);
+				fprintf(gpFile, "Vertex Shader compilation error -  %s \n", szInfoLog);
+				free(szInfoLog);
+				szInfoLog = NULL;
 
-			uninitialize();
+				uninitialize();
 			}
 		}
+		uninitialize();
 	}
 
 	// Fragment Shader 
-	const GLchar* fragmentShaderSourceCode =
-		"#version 460 core" \
-		"\n" \
-		"in vec4 oColor;" \
-		"out vec4 FragColor;" \
-		"void main(void)" \
-		"{" \
-		"FragColor = oColor;" \
-		"}";
+	const GLchar* fragementShaderSourceCode =
+												"#version 440 core \n" \
+												"\n" \
+												"in vec4 oColor; \n" \
+												"out vec4 FragColor; \n" \
+												"void main(void) \n" \
+												"{ \n" \
+												"FragColor = oColor; \n" \
+												"} \n";
 
-	fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragmentShaderSourceCode, NULL);
+	GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShaderObject, 1, (const GLchar**)&fragementShaderSourceCode, NULL);
 	glCompileShader(fragmentShaderObject);
-	
+
 	status = 0;
 	infoLogLength = 0;
 	szInfoLog = NULL;
@@ -434,18 +432,16 @@ int initialize(void)
 		if (infoLogLength > 0)
 		{
 			szInfoLog = (GLchar*)malloc(infoLogLength);
-
 			if (szInfoLog != NULL)
 			{
 				glGetShaderInfoLog(fragmentShaderObject, infoLogLength, NULL, szInfoLog);
-
-				fprintf(gpFile, "Fragment Shader compilation Error Log : %s \n", szInfoLog);
+				fprintf(gpFile, "Fragment Shader compilation error -  %s \n", szInfoLog);
 				free(szInfoLog);
 				szInfoLog = NULL;
-
 				uninitialize();
 			}
 		}
+		uninitialize();
 	}
 
 	// Shader Program
@@ -465,37 +461,34 @@ int initialize(void)
 	glGetProgramiv(shaderProgramObject, GL_LINK_STATUS, &status);
 	if (status == GL_FALSE)
 	{
-		glGetProgramiv(shaderProgramObject, GL_INFO_LOG_LENGTH, &infoLogLength); 
+		glGetProgramiv(shaderProgramObject, GL_INFO_LOG_LENGTH, &infoLogLength);
 		if (infoLogLength > 0)
 		{
 			szInfoLog = (GLchar*)malloc(infoLogLength);
-			
-			if (szInfoLog != NULL)
+			if (infoLogLength != NULL)
 			{
 				glGetProgramInfoLog(shaderProgramObject, infoLogLength, NULL, szInfoLog);
-
-				fprintf(gpFile, "Shader Program Linking Error Log : %s \n", szInfoLog);
+				fprintf(gpFile, "Shader Program Linking error -  %s \n", szInfoLog);
 				free(szInfoLog);
 				szInfoLog = NULL;
-
 				uninitialize();
 			}
 		}
+		uninitialize();
 	}
 
-	const GLfloat triangle_position[] = 
-				{
-					0.0f, 1.0f, 0.0f,		// glVertex3f(0.0f, 1.0f, 0.0f); from FFP
-					-1.0f, -1.0f, 0.0f,		// glVertex3f(-1.0f, -1.0f, 0.0f); from FFP
-					1.0f, -1.0f, 0.0f		// glVertex3f(1.0f, -1.0f, 0.0f); from FFP
-				};
-
+	const GLfloat triangle_position[] =
+								{
+									0.0f,1.0f,0.0f,
+									-1.0f,-1.0f,0.0f,
+									1.0f,-1.0f,0.0f
+								};
 	const GLfloat triangle_color[] =
-				{
-					1.0f, 0.0f, 0.0f,		// glColor3f(1.0f, 0.0f, 0.0f); from FFP
-					0.0f, 1.0f, 0.0f,		// glColor3f(0.0f, 1.0f, 0.0f); from FFP
-					0.0f, 0.0f, 1.0f		// glColor3f(0.0f, 0.0f, 1.0f); from FFP
-				};
+								{
+									1.0f,0.0f,0.0f,
+									0.0f,1.0f,0.0f,
+									0.0f,0.0f,1.0f
+								};
 
 	// VAO (Vertex Array Object)
 	glGenVertexArrays(1, &vao);
@@ -508,6 +501,7 @@ int initialize(void)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_position), triangle_position, GL_STATIC_DRAW);
 	glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// VBO (Vertex Buffer Object) for color
@@ -597,31 +591,27 @@ void uninitialize(void)
 	if (shaderProgramObject)
 	{
 		glUseProgram(shaderProgramObject);
-		
 		GLint numShaders = 0;
-		glGetProgramiv(shaderProgramObject, GL_ATTACHED_SHADERS, &numShaders);
 
+		glGetProgramiv(shaderProgramObject, GL_ATTACHED_SHADERS, &numShaders);
 		if (numShaders > 0)
 		{
 			GLuint* pShaders = (GLuint*)malloc(numShaders * sizeof(GLuint));
-			
-			if (pShaders != NULL)
+
+			if (numShaders != NULL)
 			{
 				glGetAttachedShaders(shaderProgramObject, numShaders, NULL, pShaders);
-
-				for (GLint i = 0; i < numShaders; i++)
-				{
-					glDetachShader(shaderProgramObject, pShaders[i]);
-					glDeleteShader(pShaders[i]);
-
-					pShaders[i] = 0;
-				}
-
-				free(pShaders);
-				pShaders = NULL;
 			}
+			for (GLint i = 0; i < numShaders; i++)
+			{
+				glDetachShader(shaderProgramObject, pShaders[i]);
+				glDeleteShader(pShaders[i]);
+				
+				pShaders[i] = 0;
+			}
+			free(pShaders);
+			pShaders = NULL;
 		}
-
 		glUseProgram(0);
 		glDeleteProgram(shaderProgramObject);
 		shaderProgramObject = 0;
@@ -686,6 +676,7 @@ void uninitialize(void)
 	}
 
 }
+
 
 
 

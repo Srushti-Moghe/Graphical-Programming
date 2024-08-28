@@ -1,0 +1,11 @@
+//Windows header files 
+# include<windows.h>
+# include "OGL.h"
+
+MYICON ICON MyIcon.ico 
+
+
+
+
+
+
